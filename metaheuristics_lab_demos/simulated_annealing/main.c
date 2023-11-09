@@ -35,7 +35,8 @@ void fakir_sin_demo() {
     constraint.yMin = 4.1;
     constraint.yMax = 5.8;
 
-    batch("Fakir sine", 1000, _fakir_sin, saConfig, constraint, QUIET);
+    batch_stat_t stats = batch("Fakir sine", 1000, _fakir_sin, saConfig, constraint, QUIET);
+    print_stat(stats);
 
 }
 
@@ -60,7 +61,8 @@ void oh_my_cosh_demo() {
     constraint.yMin = -15.0;
     constraint.yMax = 15.0;
 
-    batch("Oh my cosh", 1000, _oh_my_cosh, saConfig, constraint, QUIET);
+    batch_stat_t stats = batch("Oh my cosh", 1000, _oh_my_cosh, saConfig, constraint, QUIET);
+    print_stat(stats);
 }
 
 int main() {

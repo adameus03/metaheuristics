@@ -11,3 +11,15 @@ void init_varlogger(const varlogger_config_t config) {
 } 
 
 
+void varlog_iters_per_epoch(const unsigned int minIters, const unsigned int maxIters){
+    
+}
+void varlog_cooldown(const double minCooldown, const double maxCooldown) {
+
+}
+void varlog_boltzmann_k(const double minK, const double maxK) {
+
+}
+void comparison_memmode() {
+
+}
