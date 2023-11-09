@@ -104,9 +104,9 @@ batch_stat_t batch(const char* batch_name, const unsigned long int runTimes,
     static batch_stat_t stats;
     
     stats.batch_name = batch_name;
-    stats.result_average.saStat.solution_improved_times = ((double)sumStat.saStat.solution_improved_times)/runTimes;
-    stats.result_average.saStat.solution_worsened_times = ((double)sumStat.saStat.solution_worsened_times)/runTimes;
-    stats.result_average.saStat.best_solution_updated_times = ((double)sumStat.saStat.best_solution_updated_times)/runTimes;
+    stats.result_average.saStat.solution_improved_times = sumStat.saStat.solution_improved_times/runTimes;
+    stats.result_average.saStat.solution_worsened_times = sumStat.saStat.solution_worsened_times/runTimes;
+    stats.result_average.saStat.best_solution_updated_times = sumStat.saStat.best_solution_updated_times/runTimes;
     stats.result_average.solution_x = ((double)sumStat.solution_x)/runTimes;
     stats.result_average.solution_y = ((double)sumStat.solution_y)/runTimes;
     stats.result_average.extreme_val = ((double)sumStat.extreme_val)/runTimes;
@@ -128,9 +128,9 @@ batch_stat_t batch(const char* batch_name, const unsigned long int runTimes,
 
 void print_stat(const batch_stat_t stats) {
     printf("\n=========== %s global extreme obtained ===========\n", stats.batch_name);
-    printf("Solution improved times: avg %4.1f min %d max %d\n", stats.result_average.saStat.solution_improved_times, stats.result_minima.saStat.solution_improved_times, stats.result_maxima.saStat.solution_improved_times);
-    printf("Solution worsened times: avg %4.1f min %d max %d\n", stats.result_average.saStat.solution_worsened_times, stats.result_minima.saStat.solution_worsened_times, stats.result_maxima.saStat.solution_worsened_times);
-    printf("Best solution updated times: avg %4.1f min %d max %d\n", stats.result_average.saStat.best_solution_updated_times, stats.result_minima.saStat.best_solution_updated_times, stats.result_maxima.saStat.best_solution_updated_times);
+    printf("Solution improved times: avg %d min %d max %d\n", stats.result_average.saStat.solution_improved_times, stats.result_minima.saStat.solution_improved_times, stats.result_maxima.saStat.solution_improved_times);
+    printf("Solution worsened times: avg %d min %d max %d\n", stats.result_average.saStat.solution_worsened_times, stats.result_minima.saStat.solution_worsened_times, stats.result_maxima.saStat.solution_worsened_times);
+    printf("Best solution updated times: avg %d min %d max %d\n", stats.result_average.saStat.best_solution_updated_times, stats.result_minima.saStat.best_solution_updated_times, stats.result_maxima.saStat.best_solution_updated_times);
     printf("Solution X: avg %4.5f min %4.5f max %4.5f\n", stats.result_average.solution_x, stats.result_minima.solution_x, stats.result_maxima.solution_x);
     printf("Solution Y: avg %4.5f min %4.5f max %4.5f\n", stats.result_average.solution_y, stats.result_minima.solution_y, stats.result_maxima.solution_y);
     printf("Extreme value: avg %4.5f min %4.5f max %4.5f\n\n", stats.result_average.extreme_val, stats.result_minima.extreme_val, stats.result_maxima.extreme_val);
