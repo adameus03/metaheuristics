@@ -1,6 +1,12 @@
 typedef void* (*gaFunc)(const void*);
 typedef void* (*gaPairFunc)(const void*, const void*);
 typedef double (*gaScalarFunc)(const void*, const void*);
+typedef struct {
+    unsigned int size;
+    void** members;
+} ga_population_t; //sa_type consistency?
+
+typedef ga_population_t* (*gaGenerator)();
 typedef CMP_RESULT (*gaPredicate)(const void*, const void*);
 typedef enum { LEFT, RIGHT } CMP_RESULT;
 typedef enum {
@@ -20,10 +26,15 @@ typedef struct {
     SELECTION_METHOD veteranSelection;
 } ga_config_t;
 
-typedef struct {
+/* typedef struct {
     unsigned int size;
     void** members;
-} ga_population_t; //sa_type consistency?
+} ga_population_t; */ //sa_type consistency?
+
+
+typedef struct {
+    gaGenerator domainGenerator;
+} ga_domain_config_t;
 
 /**
  * Structure instance containing the optimized function's codomain configuration for the algorithm
@@ -38,32 +49,53 @@ typedef struct {
 } ga_codomain_config_t;
 
 
-ga_population_t evolve(const ga_population_t* population, 
+/* void /^ga_population_t^/ evolve(const ga_population_t* population, 
                        const gaFunc f, 
                        const ga_config_t config, 
-                       const ga_codomain_config_t codomainConfig); //maybe instead of returning, update a variable which could be read by different process during GA's execution?
+                       const ga_codomain_config_t codomainConfig);*/ //maybe instead of returning, update a variable which could be read by different process during GA's execution?
+
+void* ga_extreme(const gaFunc f, 
+                 const ga_config_t config, 
+                 const ga_domain_config_t domainConfig,
+                 const ga_codomain_config_t codomainConfig);
 
 
-
-
-/* typedef struct {
-    unsigned char* blobPopulationPtr;
+typedef struct {
+    unsigned char* blobDomainPtr;
+    unsigned char* blobCodomainPtr;
+    unsigned char* blobTempPopulationPtr;
     unsigned long domainExtent;
     unsigned long codomainExtent;
+    unsigned long tempPopulationBufferLength;
 } _blob;
 _blob _blob_loc(const _blob* blob);
-//
-// @brief Macro for setting domain & codomain types for the genetic algorithm
-// @param domainType Optimized function domain datatype
-// @param codomainType Optimized function codomain datatype
-//
-#define sa_type(domainType, codomainType) ({ \
-    static unsigned char domainStorage[sizeof(domainType) << 1]; \
-    static unsigned char codomainStorage[sizeof(domainType) << 1]; \
+/*
+ @brief Macro for setting domain type and temporary population buffer size for the genetic algorithm {{{Elaborate?}}}
+ @param domainType Optimized function domain datatype
+ @Optimized function codomain datatype
+ @param N Max size for GA's population
+*/
+#define ga_type(domainType, codomainType, N) ({ \
+    static unsigned char domainStorage[sizeof(domainType)]; \
+    static unsigned char codomainStorage[sizeof(domainType)]; \
+    static unsigned char tempPopulationStorage[(sizeof(domainType) * N) << 1]; \
     static _blob blob; \
     blob.blobDomainPtr = domainStorage; \
     blob.blobCodomainPtr = codomainStorage; \
+    blob.tempPopulationPtr = tempPopulationStorage; \
     blob.domainExtent = sizeof(domainType); \
     blob.codomainExtent = sizeof(codomainType); \
+    blob.tempPopulationBufferLength = N; \
     _blob_loc(&blob); \
-}) */
+})
+
+/*static domainType tempPopulationStorage[N];
+void __tempPopulationStorage_Set(unsigned int index, domainType value) { 
+    tempPopulationStorage[index] = value; 
+} 
+unsigned int __tempPopulationStorage_Size() { 
+    return N; 
+} 
+void* __tempPopulationStorage_Get(unsigned int index) { 
+    return (void*)(tempPopulationStorage + index); 
+} */
