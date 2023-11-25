@@ -1,7 +1,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <time.h>
-#include "ga.h"
+#include "ga_selections.h"
 
 /* typedef struct {
     unsigned int epochs;
@@ -19,28 +19,8 @@ ga_population_t roulette_select(ga_population_t population,
     // {{{implement}}}
     // use blob as in SA to store parents/veterans? Consistency?
     // No, just use the pointers to evolve's population parameter
-}
-
-ga_population_t select(ga_population_t population, 
-                       const gaFunc f, 
-                       const unsigned int selectionSize,
-                       const SELECTION_METHOD selectionMethod) {
-    ga_population_t selectedPool;
-    switch (selectionMethod) {
-        case ROULETTE:
-            selectedPool = roulette_select(population, f, numAncestors);
-            break;
-        case RANKING:
-            //selectedPool = 
-            break;
-        case TOURNAMENT:
-            //selectedPool = 
-            break;
-        case ELITE:
-            //selectedPool = 
-            break;
-    }
-    return selectedPool;
+    static ga_population_t selectedPopulation;
+    return selectedPopulation;
 }
 
 ga_codomain_config_t __codomainConfig(const ga_codomain_config_t* codomainConfig) {
@@ -66,32 +46,16 @@ int __segregationComparerF(const void* solA, const void* solB, const gaFunc f, c
     static CMP_RESULT comparerResult;
     comparerResult = codomainConfig.comparer(fa, fb);
     if (comparerResult == LEFT) {
-        return 1;
+        return -1;
     }
     else {
-        return -1;
+        return 1;
     }
 }
 
 void __segregationComparer(const void* solA, const void* solB) {
     return __segregationComparerF(solA, solB, __gaFunc(NULL), __codomainConfig(NULL));
 }
-
-/**
- * @brief Moves the weakest solutions to the beginning of the population buffer
- * @param population The population to be segregated
-*/
-void segregate(const ga_population_t* population) { //
-    qsort(population, sizeof(population) / sizeof(*population), sizeof (*population), __segregationComparer);
-}
-
-
-
-
-
-typedef enum { _S, _SM, _TPB } _blobID;
-typedef enum { _READ, _WRITE } _blobAccess;
-
 
 _blob _blob_loc(const _blob* blob) {
     static _blob __blob;
@@ -103,6 +67,70 @@ _blob _blob_loc(const _blob* blob) {
         return __blob;
     }
 }
+
+/**
+ * @brief Moves the strongest solutions to the beginning of the population buffer
+ * @param population The population to be segregated
+*/
+void segregate(const ga_population_t* population) { //
+    qsort(*(population->members), population->size, _blob_loc(NULL).domainExtent, __segregationComparer);
+}
+
+ga_population_t elite_select(ga_population_t population,
+                             const gaFunc f,
+                             const unsigned int selectionSize) {
+    segregate(&population);
+    static ga_population_t selectedPopulation;
+    selectedPopulation.size = selectionSize;
+    selectedPopulation.members = population.members;
+    return selectedPopulation;
+}
+
+ga_population_t ranking_select(ga_population_t population,
+                             const gaFunc f,
+                             const unsigned int selectionSize) {
+    // {{{implement}}}
+    static ga_population_t selectedPopulation;
+    return selectedPopulation;
+}
+
+ga_population_t tournament_select(ga_population_t population,
+                             const gaFunc f,
+                             const unsigned int selectionSize) {
+    // {{{implement}}}
+    static ga_population_t selectedPopulation;
+    return selectedPopulation;
+}
+
+ga_population_t select(ga_population_t population, 
+                       const gaFunc f, 
+                       const unsigned int selectionSize,
+                       const SELECTION_METHOD selectionMethod) {
+    static ga_population_t selectedPool;
+    switch (selectionMethod) {
+        case ROULETTE:
+            selectedPool = roulette_select(population, f, numAncestors);
+            break;
+        case RANKING:
+            selectedPool = ranking_select(population, f, numAncestors);
+            break;
+        case TOURNAMENT:
+            selectedPool = tournament_select(population, f, numAncestors);
+            break;
+        case ELITE:
+            selectedPool = elite_select(population, f, numAncestors);
+            break;
+    }
+    return selectedPool;
+}
+
+
+
+
+
+
+typedef enum { _S, _SM, _TPB } _blobID;
+typedef enum { _READ, _WRITE } _blobAccess;
 
 unsigned int _blob_TPBIndex(const unsigned int* index) {
     static unsigned int _index = 0;
