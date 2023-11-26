@@ -8,7 +8,7 @@ double fitness(const binary_chromosome chromosome, const backpack_t backpack) {
     double total_weight = 0;
     double total_value = 0;
     for (unsigned int i = 0; i < backpack.num_available; i++) {
-        if (chromosome[i >> 0x3] & (0xf0U >> (i % 0x8))) {
+        if (chromosome[i >> 0x3] & (((unsigned char)0xf0U) >> (i % 0x8))) {
             total_weight += backpack.available_weights[i];
             total_value += backpack.available_values[i];
         }
@@ -59,7 +59,10 @@ ga_bin_r_basic_population_t* population_generator() {
     unsigned char* genes = _genes_storage(NULL);
 
     for (unsigned int i = 0; i < 40 * chromo_octet_num; i++) {
-        genes[i] = rand() % 0x100;
+        genes[i] = (unsigned char)(rand() % 0x100);
+        genes[i] &= (unsigned char)(rand() % 0x100);
+        // genes[i] = 0x1;
+        // genes[i] = 0x80;
     }
     for (unsigned int i = 0; i < population.size; i++) {
         _members[i] = genes + chromo_octet_num * i;
@@ -77,7 +80,7 @@ unsigned char* optimized_backpack_composition_mask(const backpack_t backpack) {
     ga_bin_set_octet_num(4);
     ga_bin_r_init(40);
     ga_bin_r_basic_config_t config; //MAKE BATCH LATER
-    config.epochs = 10;
+    config.epochs = 50;
     config.mutation_probability = 0.1;
     config.dropout = 0.3;
     config.mutation_method = ALLEL_FLIP;

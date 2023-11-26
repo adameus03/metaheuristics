@@ -47,7 +47,7 @@ void* allel_flip_mutate(const void* chromosome) {
     unsigned int allel_octet_pos = allel_pos >> 0x3;
     unsigned char allel_offset = allel_pos % 0x8;
     
-    *(((unsigned char*)chromosome) + allel_octet_pos) ^= 0x80U >> allel_offset;
+    *(((unsigned char*)chromosome) + allel_octet_pos) ^= ((unsigned char)0x80U) >> allel_offset;
     return (void*)chromosome; // should be ok
 }
 
@@ -82,8 +82,8 @@ void* single_cut_crossover(const void* chromosomeA, const void* chromosomeB) {
     }
 
     // *(ucr + allel_octet_pos) = 0x0;
-    unsigned char msb_mask = 0xffU << (0x7U - allel_offset);
-    unsigned char lsb_mask = 0xffU >> allel_offset;
+    unsigned char msb_mask = ((unsigned char)0xffU) << (0x7U - allel_offset);
+    unsigned char lsb_mask = ((unsigned char)0xffU) >> allel_offset;
     *(ucr + allel_octet_pos) = msb_mask & *(ucca + allel_octet_pos);
     *(ucr + allel_octet_pos) |= lsb_mask & *(uccb + allel_octet_pos);
     
@@ -105,7 +105,8 @@ binary_chromosome ga_bin_r_basic_extreme(const gaFunc f,
     _chromosome_length(&config.chromosome_length);
 
     ga_config_t gaConfig;
-    unsigned int epochs;
+    // unsigned int epochs;
+    gaConfig.epochs = config.epochs;
     gaConfig.mutation_probability = config.mutation_probability;
     gaConfig.dropout = config.dropout;
     gaConfig.parentingPoolSelection = config.parentingPoolSelection;

@@ -9,6 +9,10 @@ void bizzare_backpack_demo() {
     backpack_t backpack = get_bizzare_backpack();
     // genes_loc(40 * 4);
     unsigned char* solutionMask = optimized_backpack_composition_mask(backpack);
+    // print_backpack(backpack, solutionMask);
+    printf("\n");
+    print_backpack_composition_mask(backpack, solutionMask);
+    printf("\n");
     print_backpack(backpack, solutionMask);
 }
 
