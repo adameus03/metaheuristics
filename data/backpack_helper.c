@@ -20,9 +20,15 @@ void print_backpack_composition_mask(const backpack_t backpack, unsigned char* c
     }
 }
 void print_backpack(const backpack_t backpack, unsigned char* compositionMask) {
+    unsigned int content_weight = 0;
+    unsigned int content_value = 0;
     for (unsigned int i = 0; i < backpack.num_available; i++) {
         if (compositionMask[i >> 0x3] & (0x80fU >> (i % 0x8))) {
             printf("%d %s weight %u val %u\n", i, backpack.available_names[i], backpack.available_weights[i], backpack.available_values[i]);
+            content_weight += backpack.available_weights[i];
+            content_value += backpack.available_values[i];
         }
     }
+    printf("\nCollected weight: %u / %u\n", content_weight, backpack.backpack_capacity);
+    printf("Collected value: %u\n", content_value);
 }

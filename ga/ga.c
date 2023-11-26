@@ -74,7 +74,8 @@ _gaBlob _gaBlob_loc(const _gaBlob* blob) {
  * @param population The population to be segregated
 */
 void segregate(const ga_population_t* population) { //
-    qsort(*(population->members), population->size, _gaBlob_loc(NULL).domainExtent, __segregationComparer);
+    // qsort(*(population->members), population->size, _gaBlob_loc(NULL).domainExtent, __segregationComparer);
+    qsort(population->members, population->size, _gaBlob_loc(NULL).domainExtent, __segregationComparer);
 }
 
 ga_population_t elite_select(ga_population_t population,
@@ -205,7 +206,22 @@ void alabama(const ga_population_t parentingPool, const gaPairFunc crossover) {
         //__tempPopulationStorage_Set(i, )
         for (unsigned int j = i + 1; j < parentingPool.size; j++) {
             _gaBlob_TPBIndex(&childPosition);
-            _gaBlob_write(crossover(parentingPool.members[i], parentingPool.members[j]), _TPB);
+            unsigned char* a = (unsigned char*)parentingPool.members[i]; //
+            unsigned char* b = (unsigned char*)parentingPool.members[j]; //
+
+            unsigned char a0 = a[0]; //
+            unsigned char a1 = a[1]; //
+            unsigned char a2 = a[2]; //
+            unsigned char a3 = a[3]; //
+
+            unsigned char b0 = b[0]; //
+            unsigned char b1 = b[1]; //
+            unsigned char b2 = b[2]; //
+            unsigned char b3 = b[3]; //
+
+            static void* crossoverResult; 
+            crossoverResult = crossover(parentingPool.members[i], parentingPool.members[j]); //;p
+            _gaBlob_write(&crossoverResult, _TPB);
             childPosition++;
         }
     }
@@ -221,22 +237,31 @@ void fukushima(const double mutation_probability, const gaFunc mutation, const d
         _gaBlob_TPBIndex(&fukushimaMemberPosition);
         static void* fukushimaMember;
         fukushimaMember = _gaBlob_read(_TPB);
-        _gaBlob_write(mutation(fukushimaMember), _TPB);
+        static void* mutationResult;
+        mutationResult = mutation(fukushimaMember);
+        _gaBlob_write(&mutationResult, _TPB);
     }
 }
 
 ga_population_t execute_births(const ga_population_t currentPopulation, const unsigned int numBirths) {
     static ga_population_t extendedPopulation;
-    static void* populationBuffer;
+    // static void* populationBuffer;
+    static void** populationBuffer;
     extendedPopulation.size = currentPopulation.size + numBirths;
+    // populationBuffer = _gaBlob_loc(NULL).blobTempPopulationPtr; //
+    populationBuffer = (void**)(_gaBlob_loc(NULL).blobTempPopulationPtr);
+    // extendedPopulation.members = &populationBuffer; //
+    extendedPopulation.members = populationBuffer;
     for (unsigned int i = 0; i < currentPopulation.size; i++) {
         static unsigned int existingMemberPosition;
         existingMemberPosition = numBirths + i;
         _gaBlob_TPBIndex(&existingMemberPosition);
         _gaBlob_write(currentPopulation.members + i, _TPB);
+        // _gaBlob_write(currentPopulation.members[i], _TPB);
+        // _gaBlob_write(currentPopulation.members, _TPB);
     }
-    populationBuffer = _gaBlob_loc(NULL).blobTempPopulationPtr;
-    extendedPopulation.members = &populationBuffer;
+    //populationBuffer = _gaBlob_loc(NULL).blobTempPopulationPtr;
+    //extendedPopulation.members = &populationBuffer;
     return extendedPopulation;
 }
 
@@ -280,7 +305,12 @@ void/*ga_population_t*/ evolve(ga_population_t* population,
 
         static ga_population_t veterans;
         veterans = select_subpopulation(extendedPopulation, f, population->size, config.veteranSelection);
-        *population = veterans;
+
+        // *population = veterans;
+        population->size = veterans.size;
+        for (unsigned int i = 0; i < population->size; i++) {
+            population->members[i] = veterans.members[i];
+        }
     }
 }
 

@@ -17,7 +17,8 @@ ga_population_t* domain_generator() {
     binPopulation = generator();
     
     population.size = binPopulation->size;
-    population.members = (void**)&(binPopulation->members);
+    // population.members = (void**)&(binPopulation->members);
+    population.members = (void**)(binPopulation->members);
     return &population;
 }
 
