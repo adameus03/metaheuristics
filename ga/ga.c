@@ -222,24 +222,28 @@ void alabama(const ga_population_t parentingPool, const gaPairFunc crossover) {
             static void* crossoverResult; 
             crossoverResult = crossover(parentingPool.members[i], parentingPool.members[j]); //;p
             _gaBlob_write(&crossoverResult, _TPB);
+            // _gaBlob_write(crossoverResult, _TPB);
             childPosition++;
         }
     }
 }
 
-void fukushima(const double mutation_probability, const gaFunc mutation, const double fukushimaPopulationSize) {
+void fukushima(const double mutation_probability, const gaFunc mutation, const unsigned int fukushimaPopulationSize) {
     static unsigned int totalMutations;
     totalMutations = round(mutation_probability * fukushimaPopulationSize);
 
     for (unsigned int i = 0; i < totalMutations; i++) {
         static unsigned int fukushimaMemberPosition;
-        fukushimaMemberPosition = rand() % totalMutations;
+        // fukushimaMemberPosition = rand() % totalMutations;
+        fukushimaMemberPosition = rand() % fukushimaPopulationSize;
         _gaBlob_TPBIndex(&fukushimaMemberPosition);
         static void* fukushimaMember;
-        fukushimaMember = _gaBlob_read(_TPB);
+        // fukushimaMember = _gaBlob_read(_TPB);
+        fukushimaMember = *(void**)_gaBlob_read(_TPB); //?
         static void* mutationResult;
         mutationResult = mutation(fukushimaMember);
         _gaBlob_write(&mutationResult, _TPB);
+        //_gaBlob_write(mutationResult, _TPB);
     }
 }
 
@@ -337,11 +341,13 @@ void* ga_extreme(const gaFunc f,
         candidate = population->members[i];
         candidateMeasure = f(candidate);
         comparerResult = codomainConfig.comparer(_gaBlob_read(_SM), candidateMeasure);
+        // comparerResult = codomainConfig.comparer(*(void**)_gaBlob_read(_SM), candidateMeasure);
         if (comparerResult == RIGHT) {
             _gaBlob_write(candidate, _S);
             _gaBlob_write(candidateMeasure, _SM);
         }
     }
     return _gaBlob_read(_S);
+    // return *(void**)_gaBlob_read(_S);
 }
 

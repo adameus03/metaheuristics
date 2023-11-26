@@ -49,18 +49,21 @@ unsigned char* _genes_storage(unsigned char* loc) {
 
 ga_bin_r_basic_population_t* population_generator() {
     static ga_bin_r_basic_population_t population;
-    population.size = 40;
-    static binary_chromosome _members[40];
+    population.size = 200;
+    static binary_chromosome _members[200];
     // unsigned int chromo_octet_num = __backpack(NULL).num_available >> 0x3 + (__backpack(NULL).num_available % 0x8 != 0x0);
     unsigned int chromo_octet_num = 4;
     // static unsigned char genes[40 * chromo_octet_num];
     // genes_loc(40 * chromo_octet_num);
-    genes_loc( 40 * 4 );
+    genes_loc( 200 * 4 );
     unsigned char* genes = _genes_storage(NULL);
 
-    for (unsigned int i = 0; i < 40 * chromo_octet_num; i++) {
+    for (unsigned int i = 0; i < 200 * chromo_octet_num; i++) {
         genes[i] = (unsigned char)(rand() % 0x100);
+        /* genes[i] &= (unsigned char)(rand() % 0x100);
         genes[i] &= (unsigned char)(rand() % 0x100);
+        genes[i] &= (unsigned char)(rand() % 0x100); */
+        // genes[i] = 0x0;
         // genes[i] = 0x1;
         // genes[i] = 0x80;
     }
@@ -78,11 +81,11 @@ unsigned char* optimized_backpack_composition_mask(const backpack_t backpack) {
     // const ga_bin_r_basic_startup_config_t startupConfig
     __backpack(&backpack);
     ga_bin_set_octet_num(4);
-    ga_bin_r_init(40);
+    ga_bin_r_init(200);
     ga_bin_r_basic_config_t config; //MAKE BATCH LATER
-    config.epochs = 50;
-    config.mutation_probability = 0.1;
-    config.dropout = 0.3;
+    config.epochs = 1000;
+    config.mutation_probability = 0.3;
+    config.dropout = 1;
     config.mutation_method = ALLEL_FLIP;
     config.crossover_method = SINGLE_CUT;
     config.parentingPoolSelection = ELITE;
