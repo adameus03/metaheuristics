@@ -40,10 +40,18 @@ typedef struct {
     unsigned int chromosome_length;
 } ga_bin_r_basic_config_t;
 
+
+unsigned char* _octets_storage(unsigned char* loc);
+
+#define ga_bin_set_octet_num(oct_num) ({ \
+    static unsigned char octets[oct_num]; \
+    _octets_storage(octets); \
+})
+
 binary_chromosome ga_bin_r_basic_extreme(const gaFunc f, 
                                       const ga_bin_r_basic_config_t config, 
                                       const ga_bin_r_basic_startup_config_t startupConfig);
 
-#define ga_bin_r_init(max_popsize) ({ \
-    ga_type(unsigned char*, double, max_popsize); \
+#define ga_bin_r_init(max_popsize) ({\
+    ga_type(unsigned char*, double, max_popsize);\
 })

@@ -1,3 +1,3 @@
 #include "../data/backpack.h"
 
-unsigned int* optimized_backpack_element_ids(const backpack_t backpack);
+unsigned char* optimized_backpack_composition_mask(const backpack_t backpack);

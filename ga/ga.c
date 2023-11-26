@@ -1,7 +1,8 @@
 #include <math.h>
 #include <stdlib.h>
 #include <time.h>
-#include "ga_selections.h"
+#include "ga.h"
+// #include "ga_selections.h"
 
 /* typedef struct {
     unsigned int epochs;
@@ -35,10 +36,10 @@ gaFunc __gaFunc(const gaFunc* f) {
     if (f) {
         _gaFunc = *f;
     }
-    return _gaFunc
+    return _gaFunc;
 }
 
-int __segregationComparerF(const void* solA, const void* solB, const gaFunc f, const ga_codomain_config_t* codomainConfig) {
+int __segregationComparerF(const void* solA, const void* solB, const gaFunc f, const ga_codomain_config_t codomainConfig) {
     static void* fa;
     static void* fb;
     fa = f(solA);
@@ -53,12 +54,12 @@ int __segregationComparerF(const void* solA, const void* solB, const gaFunc f, c
     }
 }
 
-void __segregationComparer(const void* solA, const void* solB) {
+int __segregationComparer(const void* solA, const void* solB) {
     return __segregationComparerF(solA, solB, __gaFunc(NULL), __codomainConfig(NULL));
 }
 
-_blob _blob_loc(const _blob* blob) {
-    static _blob __blob;
+_gaBlob _gaBlob_loc(const _gaBlob* blob) {
+    static _gaBlob __blob;
     if (blob == NULL) {
         return __blob;
     }
@@ -73,7 +74,7 @@ _blob _blob_loc(const _blob* blob) {
  * @param population The population to be segregated
 */
 void segregate(const ga_population_t* population) { //
-    qsort(*(population->members), population->size, _blob_loc(NULL).domainExtent, __segregationComparer);
+    qsort(*(population->members), population->size, _gaBlob_loc(NULL).domainExtent, __segregationComparer);
 }
 
 ga_population_t elite_select(ga_population_t population,
@@ -102,23 +103,23 @@ ga_population_t tournament_select(ga_population_t population,
     return selectedPopulation;
 }
 
-ga_population_t select(ga_population_t population, 
+ga_population_t select_subpopulation(ga_population_t population, 
                        const gaFunc f, 
                        const unsigned int selectionSize,
                        const SELECTION_METHOD selectionMethod) {
     static ga_population_t selectedPool;
     switch (selectionMethod) {
         case ROULETTE:
-            selectedPool = roulette_select(population, f, numAncestors);
+            selectedPool = roulette_select(population, f, selectionSize);
             break;
         case RANKING:
-            selectedPool = ranking_select(population, f, numAncestors);
+            selectedPool = ranking_select(population, f, selectionSize);
             break;
         case TOURNAMENT:
-            selectedPool = tournament_select(population, f, numAncestors);
+            selectedPool = tournament_select(population, f, selectionSize);
             break;
         case ELITE:
-            selectedPool = elite_select(population, f, numAncestors);
+            selectedPool = elite_select(population, f, selectionSize);
             break;
     }
     return selectedPool;
@@ -129,10 +130,10 @@ ga_population_t select(ga_population_t population,
 
 
 
-typedef enum { _S, _SM, _TPB } _blobID;
-typedef enum { _READ, _WRITE } _blobAccess;
+typedef enum { _S, _SM, _TPB } _gaBlobID;
+typedef enum { _READ, _WRITE } _gaBlobAccess;
 
-unsigned int _blob_TPBIndex(const unsigned int* index) {
+unsigned int _gaBlob_TPBIndex(const unsigned int* index) {
     static unsigned int _index = 0;
     if (index) {
         _index = *index;
@@ -140,12 +141,12 @@ unsigned int _blob_TPBIndex(const unsigned int* index) {
     return _index;
 }
 
-void* _blob_access(const void* dataPtr, const _blobID blobId, const _blobAccess blobAccess) {
+void* _gaBlob_access(const void* dataPtr, const _gaBlobID blobId, const _gaBlobAccess blobAccess) {
     if (blobId > 2 || blobId < 0) {
         return NULL;
     }
-    static _blob blob;
-    blob = _blob_loc(NULL);
+    static _gaBlob blob;
+    blob = _gaBlob_loc(NULL);
 
     static unsigned char* blobPtr;
     static size_t blobCurrentUnitSize;
@@ -163,8 +164,8 @@ void* _blob_access(const void* dataPtr, const _blobID blobId, const _blobAccess 
         blobUnitIndex = 0;
     }
     else {
-        blobUnitIndex = _blob_TPBIndex(NULL);
-        blobPtr = blob.tempPopulationPtr;
+        blobUnitIndex = _gaBlob_TPBIndex(NULL);
+        blobPtr = blob.blobTempPopulationPtr;
         blobCurrentUnitSize = blob.domainExtent;
     }
     switch (blobAccess) {
@@ -181,15 +182,15 @@ void* _blob_access(const void* dataPtr, const _blobID blobId, const _blobAccess 
     }
 }
 
-void* _blob_read(const _blobID blobId) {
-    return _blob_access(NULL, blobId, _READ);
+void* _gaBlob_read(const _gaBlobID blobId) {
+    return _gaBlob_access(NULL, blobId, _READ);
 }
 
-void _blob_write(const void* dataPtr, const _blobID blobId) {
-    _blob_access(dataPtr, blobId, _WRITE);
+void _gaBlob_write(const void* dataPtr, const _gaBlobID blobId) {
+    _gaBlob_access(dataPtr, blobId, _WRITE);
 }
 
-void _random_guard() {
+void _gaRandom_guard() {
     static unsigned char guard = 0x1;
     if (guard) {
         guard = 0x0;
@@ -203,8 +204,8 @@ void alabama(const ga_population_t parentingPool, const gaPairFunc crossover) {
     for (unsigned int i = 0; i < parentingPool.size - 1; i++) {
         //__tempPopulationStorage_Set(i, )
         for (unsigned int j = i + 1; j < parentingPool.size; j++) {
-            _blob_TPBIndex(&childPosition);
-            _blob_write(crossover(parentingPool[i], parentingPool[j]), _TPB);
+            _gaBlob_TPBIndex(&childPosition);
+            _gaBlob_write(crossover(parentingPool.members[i], parentingPool.members[j]), _TPB);
             childPosition++;
         }
     }
@@ -217,10 +218,10 @@ void fukushima(const double mutation_probability, const gaFunc mutation, const d
     for (unsigned int i = 0; i < totalMutations; i++) {
         static unsigned int fukushimaMemberPosition;
         fukushimaMemberPosition = rand() % totalMutations;
-        _blob_TPBIndex(&fukushimaMemberPosition);
+        _gaBlob_TPBIndex(&fukushimaMemberPosition);
         static void* fukushimaMember;
-        fukushimaMember = _blob_read(_TPB);
-        _blob_write(mutation(fukushimaMember), _TPB);
+        fukushimaMember = _gaBlob_read(_TPB);
+        _gaBlob_write(mutation(fukushimaMember), _TPB);
     }
 }
 
@@ -231,21 +232,21 @@ ga_population_t execute_births(const ga_population_t currentPopulation, const un
     for (unsigned int i = 0; i < currentPopulation.size; i++) {
         static unsigned int existingMemberPosition;
         existingMemberPosition = numBirths + i;
-        _blob_TPBIndex(&existingMemberPosition);
-        _blob_write(currentPopulation.members + i, _TPB);
+        _gaBlob_TPBIndex(&existingMemberPosition);
+        _gaBlob_write(currentPopulation.members + i, _TPB);
     }
-    populationBuffer = _blob_loc(NULL).blobTempPopulationPtr;
+    populationBuffer = _gaBlob_loc(NULL).blobTempPopulationPtr;
     extendedPopulation.members = &populationBuffer;
     return extendedPopulation;
 }
 
-void/*ga_population_t*/ evolve(const ga_population_t* population, 
+void/*ga_population_t*/ evolve(ga_population_t* population, 
                        const gaFunc f, 
                        const ga_config_t config, 
                        const ga_codomain_config_t codomainConfig) {
     __gaFunc(&f);
     __codomainConfig(&codomainConfig);
-    for (unsigned int generation = 0; i < config.epochs; i++) {
+    for (unsigned int generation = 0; generation < config.epochs; generation++) {
         static ga_population_t parentingPool;
         /*
             Minimum number of parents, so that that each child is an only child in his family is N*(N-1)/2 
@@ -269,7 +270,7 @@ void/*ga_population_t*/ evolve(const ga_population_t* population,
 
         // assert(numDescendants == numAscestors * (numAncestors - 1) / 2); //debug
 
-        parentingPool = select(*population, f, numAncestors, config.parentingPoolSelection);// <<< ADD iteratively to POOOL
+        parentingPool = select_subpopulation(*population, f, numAncestors, config.parentingPoolSelection);// <<< ADD iteratively to POOOL
         // segregate(population); 
         alabama(parentingPool, config.crossover);
         fukushima(config.mutation_probability, config.mutate, numAncestors);
@@ -278,7 +279,7 @@ void/*ga_population_t*/ evolve(const ga_population_t* population,
         extendedPopulation = execute_births(*population, numDescendants);
 
         static ga_population_t veterans;
-        veterans = select(extendedPopulation, f, population->size, config.veteranSelection);
+        veterans = select_subpopulation(extendedPopulation, f, population->size, config.veteranSelection);
         *population = veterans;
     }
 }
@@ -288,7 +289,7 @@ void* ga_extreme(const gaFunc f,
                  const ga_domain_config_t domainConfig,
                  const ga_codomain_config_t codomainConfig) {
     
-    
+    _gaRandom_guard();
     //initialize population
     ga_population_t* population = domainConfig.domainGenerator();
     evolve(population, f, config, codomainConfig);
@@ -296,8 +297,8 @@ void* ga_extreme(const gaFunc f,
     // return best solution
 
     //{{{check if population is not empty?}}}
-    _blob_write(population->members[0], _S);
-    _blob_write(f(population->members[0]), _SM);
+    _gaBlob_write(population->members[0], _S);
+    _gaBlob_write(f(population->members[0]), _SM);
     // {{{maybe do this in each generation?}}} 
     for (unsigned int i = 1; i < population->size; i++) {
         static CMP_RESULT comparerResult;
@@ -305,12 +306,12 @@ void* ga_extreme(const gaFunc f,
         static void* candidateMeasure;
         candidate = population->members[i];
         candidateMeasure = f(candidate);
-        comparerResult = codomainConfig.comparer(_blob_read(_SM), candidateMeasure);
+        comparerResult = codomainConfig.comparer(_gaBlob_read(_SM), candidateMeasure);
         if (comparerResult == RIGHT) {
-            _blob_write(candidate, _S);
-            _blob_write(candidateMeasure, _SM);
+            _gaBlob_write(candidate, _S);
+            _gaBlob_write(candidateMeasure, _SM);
         }
     }
-    return _blob_read(_S);
+    return _gaBlob_read(_S);
 }
 

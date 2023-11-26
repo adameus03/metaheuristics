@@ -16,7 +16,7 @@ ga_population_t* domain_generator() {
     ga_bin_r_basic_population_t* binPopulation;
     binPopulation = generator();
     
-    population.size = binPopulation.size;
+    population.size = binPopulation->size;
     population.members = (void**)&(binPopulation->members);
     return &population;
 }
@@ -47,8 +47,16 @@ void* allel_flip_mutate(const void* chromosome) {
     unsigned char allel_offset = allel_pos % 0x8;
     
     *(((unsigned char*)chromosome) + allel_octet_pos) ^= 0x80U >> allel_offset;
-    return chromosome; // should be ok
+    return (void*)chromosome; // should be ok
 }
+
+unsigned char* _octets_storage(unsigned char* loc) {
+    static unsigned char* _loc;
+    if (loc) {
+        _loc = loc;
+    }
+    return _loc;
+} 
 
 void* single_cut_crossover(const void* chromosomeA, const void* chromosomeB) {
     unsigned int allel_pos = rand() % _chromosome_length(NULL);
@@ -59,14 +67,17 @@ void* single_cut_crossover(const void* chromosomeA, const void* chromosomeB) {
     unsigned char* ucca = (unsigned char*)chromosomeA;
     unsigned char* uccb = (unsigned char*)chromosomeB;
     
-    unsigned int num_octets = (_chromosome_length(NULL) >> 0x3) + (_chromosome_length(NULL) % 0x8 != 0x0);
-    static unsigned char ucr[num_octets] = {0}; //result //if problems, move to static in blob + macro?
+    unsigned int num_octets = (_chromosome_length(NULL) >> 0x3) + (_chromosome_length(NULL) % 0x8 != 0x0); //move to macro?
+    // static unsigned char ucr[num_octets] = {0}; //result //if problems, move to static in blob + macro? ; Done 
+    unsigned char* ucr = _octets_storage(NULL);
     
     for (unsigned int i = 0; i < allel_octet_pos; i++) {
         *(ucr + i) = *(ucca + i);
     }
     for (unsigned int i = allel_octet_pos + 1; i < num_octets; i++) {
-        *(ucr + i) = *(uccb + i);
+        unsigned char v = *(uccb + i);
+        // *(ucr + i) = *(uccb + i);
+        *(ucr + i) = v;
     }
 
     // *(ucr + allel_octet_pos) = 0x0;
@@ -89,14 +100,14 @@ void* mask_crossover(const void* chromosomeA, const void* chromosomeB) {
 binary_chromosome ga_bin_r_basic_extreme(const gaFunc f, 
                                            const ga_bin_r_basic_config_t config, 
                                            const ga_bin_r_basic_startup_config_t startupConfig) {
-    _initial_population_generator(startupConfig.initialPopulationGenerator);
-    _chromosome_length(config.chromosome_length);
+    _initial_population_generator(&startupConfig.initialPopulationGenerator);
+    _chromosome_length(&config.chromosome_length);
 
     ga_config_t gaConfig;
     unsigned int epochs;
     gaConfig.mutation_probability = config.mutation_probability;
     gaConfig.dropout = config.dropout;
-    gaConfig.parentingPoolSelection = config.parentingPoolSelection
+    gaConfig.parentingPoolSelection = config.parentingPoolSelection;
     gaConfig.veteranSelection = config.veteranSelection;
 
     //gaConfig.mutate = co
@@ -136,5 +147,5 @@ binary_chromosome ga_bin_r_basic_extreme(const gaFunc f,
     // solution.num_genes = config.chromosome_length;
 
     // return solution;
-    return (binary_chromosome)ga_extreme(f, gaConfig, domainConfig, codomainConfig);
+    return (binary_chromosome)ga_extreme(f, gaConfig, gaDomainConfig, gaCodomainConfig);
 }

@@ -7,8 +7,8 @@ typedef struct {
 } ga_population_t; //sa_type consistency?
 
 typedef ga_population_t* (*gaGenerator)();
-typedef CMP_RESULT (*gaPredicate)(const void*, const void*);
 typedef enum { LEFT, RIGHT } CMP_RESULT;
+typedef CMP_RESULT (*gaPredicate)(const void*, const void*);
 typedef enum {
     ROULETTE,
     RANKING,
@@ -67,8 +67,8 @@ typedef struct {
     unsigned long domainExtent;
     unsigned long codomainExtent;
     unsigned long tempPopulationBufferLength;
-} _blob;
-_blob _blob_loc(const _blob* blob);
+} _gaBlob;
+_gaBlob _gaBlob_loc(const _gaBlob* blob);
 /*
  @brief Macro for setting domain type and temporary population buffer size for the genetic algorithm {{{Elaborate?}}}
  @param domainType Optimized function domain datatype
@@ -79,14 +79,14 @@ _blob _blob_loc(const _blob* blob);
     static unsigned char domainStorage[sizeof(domainType)]; \
     static unsigned char codomainStorage[sizeof(domainType)]; \
     static unsigned char tempPopulationStorage[(sizeof(domainType) * N) << 1]; \
-    static _blob blob; \
+    static _gaBlob blob; \
     blob.blobDomainPtr = domainStorage; \
     blob.blobCodomainPtr = codomainStorage; \
-    blob.tempPopulationPtr = tempPopulationStorage; \
+    blob.blobTempPopulationPtr = tempPopulationStorage; \
     blob.domainExtent = sizeof(domainType); \
     blob.codomainExtent = sizeof(codomainType); \
     blob.tempPopulationBufferLength = N; \
-    _blob_loc(&blob); \
+    _gaBlob_loc(&blob); \
 })
 
 /*static domainType tempPopulationStorage[N];
