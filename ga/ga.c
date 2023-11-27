@@ -1,6 +1,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <time.h>
+#include <stdio.h> //debug
 #include "ga.h"
 // #include "ga_selections.h"
 
@@ -13,16 +14,6 @@
     SELECTION_METHOD parentingPoolSelection;
     SELECTION_METHOD veteranSelection;
 } ga_config_t; */
-
-ga_population_t roulette_select(ga_population_t population, 
-                               const gaFunc f, 
-                               const unsigned int selectionSize) {
-    // {{{implement}}}
-    // use blob as in SA to store parents/veterans? Consistency?
-    // No, just use the pointers to evolve's population parameter
-    static ga_population_t selectedPopulation;
-    return selectedPopulation;
-}
 
 ga_codomain_config_t __codomainConfig(const ga_codomain_config_t* codomainConfig) {
     static ga_codomain_config_t _codomainConfig;
@@ -78,6 +69,99 @@ void segregate(const ga_population_t* population) { //
     qsort(population->members, population->size, _gaBlob_loc(NULL).domainExtent, __segregationComparer);
 }
 
+/*
+    _S - solution
+    _SM - solution measure
+    _TPB - temp population buf
+    _SELBUF - selection buf
+    _TOURGRP - tournament group buf
+*/
+typedef enum { _S, _SM, _TPB, _SELBUF, _TOURGRP } _gaBlobID;
+typedef enum { _READ, _WRITE } _gaBlobAccess;
+
+unsigned int _gaBlob_TPBIndex(const unsigned int* index) {
+    static unsigned int _index = 0;
+    if (index) {
+        _index = *index;
+    }
+    return _index;
+}
+
+unsigned int _gaBlob_SELBUFIndex(const unsigned int* index) {
+    static unsigned int _index = 0;
+    if (index) {
+        _index = *index;
+    }
+    return _index;
+}
+
+unsigned int _gaBlob_TOURGRPIndex(const unsigned int* index) {
+    static unsigned int _index = 0;
+    if (index) {
+        _index = *index;
+    }
+    return _index;
+}
+
+void* _gaBlob_access(const void* dataPtr, const _gaBlobID blobId, const _gaBlobAccess blobAccess) {
+    if (blobId > 4 || blobId < 0) {
+        return NULL;
+    }
+    static _gaBlob blob;
+    blob = _gaBlob_loc(NULL);
+
+    static unsigned char* blobPtr;
+    static size_t blobCurrentUnitSize;
+    static size_t blobUnitIndex;
+    if (blobId == _S) {
+        blobPtr = blob.blobDomainPtr;
+        blobCurrentUnitSize = blob.domainExtent;
+        // blobUnitIndex = blobId == _BS;
+        blobUnitIndex = 0;
+    }
+    else if (blobId == _SM) {
+        blobPtr = blob.blobCodomainPtr;
+        blobCurrentUnitSize = blob.codomainExtent;
+        // blobUnitIndex = blobId == _BSM;
+        blobUnitIndex = 0;
+    }
+    else if (blobId == _TPB) {
+        blobUnitIndex = _gaBlob_TPBIndex(NULL);
+        blobPtr = blob.blobTempPopulationPtr;
+        blobCurrentUnitSize = blob.domainExtent;
+    }
+    else if (blobId == _SELBUF){
+        blobUnitIndex = _gaBlob_SELBUFIndex(NULL);
+        blobPtr = blob.blobSelectionPtr;
+        blobCurrentUnitSize = blob.domainExtent;
+    }
+    else {
+        blobUnitIndex = _gaBlob_TOURGRPIndex(NULL);
+        blobPtr = blob.blobTournamentGroupPtr;
+        blobCurrentUnitSize = blob.domainExtent;
+    }
+    switch (blobAccess) {
+        case _READ:
+            return (void*)(blobPtr + blobUnitIndex * blobCurrentUnitSize);
+        case _WRITE:
+            unsigned char* ucDataPtr = (unsigned char*)dataPtr;
+            for (size_t i = 0; i < blobCurrentUnitSize; i++) {
+                blobPtr[blobUnitIndex * blobCurrentUnitSize + i] = ucDataPtr[i];
+            }
+            return NULL;
+        default:
+            return NULL;
+    }
+}
+
+void* _gaBlob_read(const _gaBlobID blobId) {
+    return _gaBlob_access(NULL, blobId, _READ);
+}
+
+void _gaBlob_write(const void* dataPtr, const _gaBlobID blobId) {
+    _gaBlob_access(dataPtr, blobId, _WRITE);
+}
+
 ga_population_t elite_select(ga_population_t population,
                              const gaFunc f,
                              const unsigned int selectionSize) {
@@ -88,12 +172,141 @@ ga_population_t elite_select(ga_population_t population,
     return selectedPopulation;
 }
 
+ga_population_t roulette_select(ga_population_t population,
+                               const gaFunc f, 
+                               const unsigned int selectionSize) {
+    // {{{implement}}}
+    // use blob as in SA to store parents/veterans? Consistency?
+    // No, just use the pointers to evolve's population parameter
+    static ga_population_t selectedPopulation;
+    static ga_codomain_config_t codomainConfig;
+    codomainConfig = __codomainConfig(NULL);
+    static double r;
+
+    selectedPopulation.size = selectionSize;
+    // selectedPopulation.members = population.members; // move selected members to beginning of buffer
+    static void** selectedPopulationBuffer;
+    selectedPopulationBuffer = (void**)(_gaBlob_loc(NULL).blobSelectionPtr);
+    selectedPopulation.members = selectedPopulationBuffer;
+
+    double totalFitness = 0;
+    // Could be optimized in cost of using additional memory (storing members fitness)
+    for (unsigned int i = 0; i < population.size; i++) {
+        totalFitness += codomainConfig.norm(f(population.members[i]));
+        // totalFitness += *(double*)f(population.members[i]);
+    }
+
+    if (totalFitness == 0) {
+        ga_population_t trimmedPopulation;
+        trimmedPopulation.size = selectionSize;
+        trimmedPopulation.members = population.members;
+        printf ("\n(Total fitness was 0)\n");
+        return trimmedPopulation;
+    }
+
+    for (unsigned int i = 0; i < selectionSize; i++) {
+        r = ((double)rand()) / ((double)RAND_MAX);
+        static double sumFitness;
+        sumFitness = 0;
+        for (unsigned int j = 0; j < population.size; j++) {
+            sumFitness += codomainConfig.norm(f(population.members[j]));
+            if (r < ((double)sumFitness) / ((double)totalFitness)) {
+                /* static void* temp;
+                temp = population.members[i];
+                population.members[i] = population.members[j];
+                population.members[j] = temp; */
+                _gaBlob_SELBUFIndex(&i);
+                _gaBlob_write(population.members + j, _SELBUF);
+                break;
+            }
+        }
+    }
+    return selectedPopulation;
+}
+
 ga_population_t ranking_select(ga_population_t population,
                              const gaFunc f,
                              const unsigned int selectionSize) {
     // {{{implement}}}
+    segregate(&population);
     static ga_population_t selectedPopulation;
+    static ga_codomain_config_t codomainConfig;
+    codomainConfig = __codomainConfig(NULL);
+    static double r;
+
+    selectedPopulation.size = selectionSize;
+    // selectedPopulation.members = population.members;
+    static void** selectedPopulationBuffer;
+    selectedPopulationBuffer = (void**)(_gaBlob_loc(NULL).blobSelectionPtr);
+    selectedPopulation.members = selectedPopulationBuffer;
+
+    // unsigned int totalRank = (selectionSize * (selectionSize - 1)) >> 0x1;
+    // unsigned int totalRank = (population.size * (population.size - 1)) >> 0x1;
+    double totalRanking = 0;
+    for (unsigned int i = 0; i < population.size; i++) {
+        totalRanking += ((double)1) / (i + 1);
+    }
+    //;
+    static unsigned int i;
+    i = 0;
+    for (; i < selectionSize; i++) {
+        r = ((double)rand()) / ((double)RAND_MAX);
+        static double sumRank;
+        sumRank = 0;
+        for (unsigned int j = 0; j < population.size; j++) {
+            // sumFitness += codomainConfig.norm(f(population.members[j]));
+            sumRank += ((double)1) / ((double)(j + 1));
+            if (r < ((double)sumRank) / ((double)totalRanking)) {
+                /* static void* temp;
+                temp = population.members[i];
+                population.members[i] = population.members[j];
+                population.members[j] = temp; */
+                _gaBlob_SELBUFIndex(&i);
+                _gaBlob_write(population.members + j, _SELBUF);
+                break;
+            }
+        }
+    }
+
     return selectedPopulation;
+}
+
+double _tournament_group_size_factor(const double* factor) {
+    static double _factor = 0.1;
+    if (factor) {
+        _factor = *factor;
+    }
+    return _factor;
+}
+
+double _tournament_determinism_factor(const double* p) {
+    static double _p = 1;
+    if (p) {
+        _p = *p;
+    }
+    return _p;
+}
+
+/**
+ * @brief Function used to update the tournament group size for the tournament selection
+ * @param groupsizeFactor
+ * @note The default groupsize factor is 0.1
+*/
+void set_tournament_group_size_factor(const double groupsizeFactor) {
+    static double _groupsizeFactor;
+    _groupsizeFactor = groupsizeFactor;
+    _tournament_group_size_factor(&_groupsizeFactor);
+}
+
+/**
+ * @brief Function used to update the tournament determinism factor (p)
+ * @param p
+ * @note The default value used is 1 (fully deterministic tournaments)
+*/
+void set_tournament_determinism_factor(const double p) {
+    static double _determinismFactor;
+    _determinismFactor = p;
+    _tournament_determinism_factor(&_determinismFactor);
 }
 
 ga_population_t tournament_select(ga_population_t population,
@@ -101,6 +314,67 @@ ga_population_t tournament_select(ga_population_t population,
                              const unsigned int selectionSize) {
     // {{{implement}}}
     static ga_population_t selectedPopulation;
+    static ga_codomain_config_t codomainConfig;
+    codomainConfig = __codomainConfig(NULL);
+
+    selectedPopulation.size = selectionSize;
+    static void** selectedPopulationBuffer;
+    selectedPopulationBuffer = (void**)(_gaBlob_loc(NULL).blobSelectionPtr);
+    selectedPopulation.members = selectedPopulationBuffer;
+
+    // segregate(&population);
+
+    unsigned int tournament_groupsize = _tournament_group_size_factor(NULL) * population.size;
+    double p = _tournament_determinism_factor(NULL);
+    // {{{CHANGE FROM HERE; done}}} 
+    for (unsigned int i = 0; i < selectionSize; i++) {
+        static ga_population_t tournamentGroup;
+        static void** tournamentMembersBuf;
+        tournamentMembersBuf = (void**)(_gaBlob_loc(NULL).blobTournamentGroupPtr);
+        tournamentGroup.size= tournament_groupsize;
+        tournamentGroup.members = tournamentMembersBuf;   
+
+        for (unsigned int j = 0; j < tournament_groupsize; j++) {
+            static unsigned int tournamentMemberIndex;
+            tournamentMemberIndex = rand() % population.size;
+            // tournamentGroup.members[i] = population.members[tournamentMemberIndex]; //{{{replace with this / =>remove blob io funcs?}}} 
+            _gaBlob_TOURGRPIndex(&i);
+            _gaBlob_write(population.members + tournamentMemberIndex, _TOURGRP);
+        }
+
+        segregate(&tournamentGroup);
+        static double currentCumulativeProbability;
+        static double currentProbability;
+        currentCumulativeProbability = 0;
+
+        static double r;
+        r = ((double)rand()) / ((double)RAND_MAX);
+        
+        currentProbability = p;
+        currentCumulativeProbability += currentProbability;
+        if (r < currentCumulativeProbability) {
+            _gaBlob_SELBUFIndex(&i);
+            _gaBlob_write(tournamentGroup.members /*+ 0*/, _SELBUF);
+        }
+        else {
+            for (unsigned int j = /*0*/1; j < tournament_groupsize; j++) {
+                /* if (j == 0) {
+                    currentProbability = p;
+                }
+                else {
+                    currentProbability *= 1 - p;
+                }*/
+                currentProbability *= 1 - p;
+                currentCumulativeProbability += currentProbability;
+                if (r < currentCumulativeProbability) {
+                    _gaBlob_SELBUFIndex(&i);
+                    _gaBlob_write(tournamentGroup.members + j, _SELBUF);
+                    break;
+                }
+            }
+        }
+    }
+
     return selectedPopulation;
 }
 
@@ -131,65 +405,6 @@ ga_population_t select_subpopulation(ga_population_t population,
 
 
 
-typedef enum { _S, _SM, _TPB } _gaBlobID;
-typedef enum { _READ, _WRITE } _gaBlobAccess;
-
-unsigned int _gaBlob_TPBIndex(const unsigned int* index) {
-    static unsigned int _index = 0;
-    if (index) {
-        _index = *index;
-    }
-    return _index;
-}
-
-void* _gaBlob_access(const void* dataPtr, const _gaBlobID blobId, const _gaBlobAccess blobAccess) {
-    if (blobId > 2 || blobId < 0) {
-        return NULL;
-    }
-    static _gaBlob blob;
-    blob = _gaBlob_loc(NULL);
-
-    static unsigned char* blobPtr;
-    static size_t blobCurrentUnitSize;
-    static size_t blobUnitIndex;
-    if (blobId == _S) {
-        blobPtr = blob.blobDomainPtr;
-        blobCurrentUnitSize = blob.domainExtent;
-        // blobUnitIndex = blobId == _BS;
-        blobUnitIndex = 0;
-    }
-    else if (blobId == _SM) {
-        blobPtr = blob.blobCodomainPtr;
-        blobCurrentUnitSize = blob.codomainExtent;
-        // blobUnitIndex = blobId == _BSM;
-        blobUnitIndex = 0;
-    }
-    else {
-        blobUnitIndex = _gaBlob_TPBIndex(NULL);
-        blobPtr = blob.blobTempPopulationPtr;
-        blobCurrentUnitSize = blob.domainExtent;
-    }
-    switch (blobAccess) {
-        case _READ:
-            return (void*)(blobPtr + blobUnitIndex * blobCurrentUnitSize);
-        case _WRITE:
-            unsigned char* ucDataPtr = (unsigned char*)dataPtr;
-            for (size_t i = 0; i < blobCurrentUnitSize; i++) {
-                blobPtr[blobUnitIndex * blobCurrentUnitSize + i] = ucDataPtr[i];
-            }
-            return NULL;
-        default:
-            return NULL;
-    }
-}
-
-void* _gaBlob_read(const _gaBlobID blobId) {
-    return _gaBlob_access(NULL, blobId, _READ);
-}
-
-void _gaBlob_write(const void* dataPtr, const _gaBlobID blobId) {
-    _gaBlob_access(dataPtr, blobId, _WRITE);
-}
 
 void _gaRandom_guard() {
     static unsigned char guard = 0x1;
@@ -300,7 +515,7 @@ void/*ga_population_t*/ evolve(ga_population_t* population,
         // assert(numDescendants == numAscestors * (numAncestors - 1) / 2); //debug
 
         parentingPool = select_subpopulation(*population, f, numAncestors, config.parentingPoolSelection);// <<< ADD iteratively to POOOL
-        // segregate(population); 
+        // segregate(population);
         alabama(parentingPool, config.crossover);
         fukushima(config.mutation_probability, config.mutate, numAncestors);
         // {{{cont}}}

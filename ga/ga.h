@@ -1,6 +1,7 @@
 typedef void* (*gaFunc)(const void*);
 typedef void* (*gaPairFunc)(const void*, const void*);
-typedef double (*gaScalarFunc)(const void*, const void*);
+typedef double (*gaScalarFunc)(const void*);
+typedef double (*gaPairScalarFunc)(const void*, const void*);
 typedef struct {
     unsigned int size;
     void** members;
@@ -45,7 +46,8 @@ typedef struct {
     gaPredicate comparer;
     /* A metric function that should be able to give the algoritm an idea
        of how far the 2 given objects are from each other in the optimized function's codomain space */
-    gaScalarFunc metric;
+    gaPairScalarFunc metric;
+    gaScalarFunc norm;
 } ga_codomain_config_t;
 
 
@@ -59,11 +61,17 @@ void* ga_extreme(const gaFunc f,
                  const ga_domain_config_t domainConfig,
                  const ga_codomain_config_t codomainConfig);
 
+void set_tournament_group_size_factor(const double groupsizeFactor);
+
+void set_tournament_determinism_factor(const double p);
+
 
 typedef struct {
     unsigned char* blobDomainPtr;
     unsigned char* blobCodomainPtr;
     unsigned char* blobTempPopulationPtr;
+    unsigned char* blobSelectionPtr;
+    unsigned char* blobTournamentGroupPtr;
     unsigned long domainExtent;
     unsigned long codomainExtent;
     unsigned long tempPopulationBufferLength;
@@ -79,10 +87,14 @@ _gaBlob _gaBlob_loc(const _gaBlob* blob);
     static unsigned char domainStorage[sizeof(domainType)]; \
     static unsigned char codomainStorage[sizeof(domainType)]; \
     static unsigned char tempPopulationStorage[(sizeof(domainType) * N) << 1]; \
+    static unsigned char selectionStorage[sizeof(domainType) * N]; \
+    static unsigned char tournamentGroupStorage[sizeof(domainType) * N]; \
     static _gaBlob blob; \
     blob.blobDomainPtr = domainStorage; \
     blob.blobCodomainPtr = codomainStorage; \
     blob.blobTempPopulationPtr = tempPopulationStorage; \
+    blob.blobSelectionPtr = selectionStorage; \
+    blob.blobTournamentGroupPtr = tournamentGroupStorage; \
     blob.domainExtent = sizeof(domainType); \
     blob.codomainExtent = sizeof(codomainType); \
     blob.tempPopulationBufferLength = N; \

@@ -30,6 +30,10 @@ double metric(const void* ra, const void* rb) {
     return fabs(*(double*)(rb) - *(double*)(ra));
 }
 
+double norm(const void* ra) {
+    return fabs(*(double*)ra);
+}
+
 unsigned int _chromosome_length(const unsigned int* chromo_length) {
     static unsigned int _chromo_length = 0;
     if (chromo_length) {
@@ -143,6 +147,7 @@ binary_chromosome ga_bin_r_basic_extreme(const gaFunc f,
     ga_codomain_config_t gaCodomainConfig;
     gaCodomainConfig.comparer = comparer;
     gaCodomainConfig.metric = metric;
+    gaCodomainConfig.norm = norm; // used by roulette
     
     // binary_chromosome_t solution;
     // solution.genes = (unsigned char*)ga_extreme(f, gaConfig, domainConfig, codomainConfig);

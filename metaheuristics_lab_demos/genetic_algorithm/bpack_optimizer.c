@@ -13,7 +13,8 @@ double fitness(const binary_chromosome chromosome, const backpack_t backpack) {
             total_value += backpack.available_values[i];
         }
     }
-    if (total_weight > backpack.num_available) {
+    // if (total_weight > backpack.num_available) {
+    if (total_weight > backpack.backpack_capacity) {
         return 0;
     }
     else {
@@ -60,9 +61,9 @@ ga_bin_r_basic_population_t* population_generator() {
 
     for (unsigned int i = 0; i < 200 * chromo_octet_num; i++) {
         genes[i] = (unsigned char)(rand() % 0x100);
-        /* genes[i] &= (unsigned char)(rand() % 0x100);
         genes[i] &= (unsigned char)(rand() % 0x100);
-        genes[i] &= (unsigned char)(rand() % 0x100); */
+        /* genes[i] &= (unsigned char)(rand() % 0x100);
+        genes[i] &= (unsigned char)(rand() % 0x100);*/
         // genes[i] = 0x0;
         // genes[i] = 0x1;
         // genes[i] = 0x80;
@@ -89,7 +90,9 @@ unsigned char* optimized_backpack_composition_mask(const backpack_t backpack) {
     config.mutation_method = ALLEL_FLIP;
     config.crossover_method = SINGLE_CUT;
     config.parentingPoolSelection = ELITE;
-    config.veteranSelection = ELITE;
+    config.veteranSelection = TOURNAMENT;
+    set_tournament_group_size_factor(0.1);
+    set_tournament_determinism_factor(0.8);
     config.chromosome_length = backpack.num_available;
 
     ga_bin_r_basic_startup_config_t startupConfig;
