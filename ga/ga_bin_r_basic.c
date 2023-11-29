@@ -1,5 +1,6 @@
 #include <math.h>
 #include <stdlib.h>
+//#include <stdio.h> //debug
 #include "ga_bin_r_basic.h"
 
 gaBinRBasicGenerator _initial_population_generator(const gaBinRBasicGenerator* generator) {
@@ -259,5 +260,9 @@ binary_chromosome ga_bin_r_basic_extreme(const gaFunc f,
     // solution.num_genes = config.chromosome_length;
 
     // return solution;
-    return (binary_chromosome)ga_extreme(f, gaConfig, gaDomainConfig, gaCodomainConfig);
+
+    binary_chromosome solution = (binary_chromosome)ga_extreme(f, gaConfig, gaDomainConfig, gaCodomainConfig);
+    //printf("DEBUG FROM ga_bin_r_basic | FITNESS = %lf\n", *(double*)f((void*)solution));
+    // return (binary_chromosome)ga_extreme(f, gaConfig, gaDomainConfig, gaCodomainConfig);
+    return solution;
 }

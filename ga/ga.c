@@ -1,7 +1,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <time.h>
-#include <stdio.h> //debug
+//#include <stdio.h> //debug
 #include "ga.h"
 // #include "ga_selections.h"
 
@@ -200,7 +200,7 @@ ga_population_t roulette_select(ga_population_t population,
         ga_population_t trimmedPopulation;
         trimmedPopulation.size = selectionSize;
         trimmedPopulation.members = population.members;
-        printf ("\n(Total fitness was 0)\n");
+        // printf ("\n(Total fitness was 0)\n");
         return trimmedPopulation;
     }
 
@@ -338,32 +338,26 @@ ga_population_t tournament_select(ga_population_t population,
             static unsigned int tournamentMemberIndex;
             tournamentMemberIndex = rand() % population.size;
             // tournamentGroup.members[i] = population.members[tournamentMemberIndex]; //{{{replace with this / =>remove blob io funcs?}}} 
-            _gaBlob_TOURGRPIndex(&i);
+            _gaBlob_TOURGRPIndex(&j);//
             _gaBlob_write(population.members + tournamentMemberIndex, _TOURGRP);
         }
 
         segregate(&tournamentGroup);
-        static double currentCumulativeProbability;
-        static double currentProbability;
-        currentCumulativeProbability = 0;
+        // static double currentCumulativeProbability;
+        // static double currentProbability;
+        // currentCumulativeProbability = 0;
 
         static double r;
-        r = ((double)rand()) / ((double)RAND_MAX);
+        // r = ((double)rand()) / ((double)RAND_MAX);
         
-        currentProbability = p;
-        currentCumulativeProbability += currentProbability;
-        if (r < currentCumulativeProbability) {
+        // currentProbability = p;
+        // currentCumulativeProbability += currentProbability;
+        /* if (r < currentCumulativeProbability) {
             _gaBlob_SELBUFIndex(&i);
-            _gaBlob_write(tournamentGroup.members /*+ 0*/, _SELBUF);
+            _gaBlob_write(tournamentGroup.members, _SELBUF);
         }
         else {
-            for (unsigned int j = /*0*/1; j < tournament_groupsize; j++) {
-                /* if (j == 0) {
-                    currentProbability = p;
-                }
-                else {
-                    currentProbability *= 1 - p;
-                }*/
+            for (unsigned int j = 1; j < tournament_groupsize; j++) {
                 currentProbability *= 1 - p;
                 currentCumulativeProbability += currentProbability;
                 if (r < currentCumulativeProbability) {
@@ -372,6 +366,21 @@ ga_population_t tournament_select(ga_population_t population,
                     break;
                 }
             }
+        }*/
+        static unsigned char selected;
+        selected = 0x0;
+        for (unsigned int j = 0; j < tournament_groupsize - 1; j++) {
+            r = ((double)rand()) / ((double)RAND_MAX);
+            if (r < p) {
+                _gaBlob_SELBUFIndex(&i);
+                _gaBlob_write(tournamentGroup.members + j, _SELBUF);
+                selected = 0x1;
+                break;
+            }
+        }
+        if (!selected) {
+            _gaBlob_SELBUFIndex(&i);
+            _gaBlob_write(tournamentGroup.members + tournament_groupsize - 1, _SELBUF);
         }
     }
 
@@ -562,7 +571,9 @@ void* ga_extreme(const gaFunc f,
             _gaBlob_write(candidateMeasure, _SM);
         }
     }
-    return _gaBlob_read(_S);
+
+    //printf("DEBUG FROM ga | FITNESS = %lf\n", *(double*)f(_gaBlob_read(_S)));
+    return (void*)_gaBlob_read(_S);
     // return *(void**)_gaBlob_read(_S);
 }
 

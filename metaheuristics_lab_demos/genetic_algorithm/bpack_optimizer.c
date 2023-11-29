@@ -8,7 +8,7 @@ double fitness(const binary_chromosome chromosome, const backpack_t backpack) {
     double total_weight = 0;
     double total_value = 0;
     for (unsigned int i = 0; i < backpack.num_available; i++) {
-        if (chromosome[i >> 0x3] & (((unsigned char)0xf0U) >> (i % 0x8))) {
+        if (chromosome[i >> 0x3] & (((unsigned char)0x80U) >> (i % 0x8))) {
             total_weight += backpack.available_weights[i];
             total_value += backpack.available_values[i];
         }
@@ -86,14 +86,14 @@ unsigned char* optimized_backpack_composition_mask(const backpack_t backpack) {
     ga_bin_r_basic_config_t config; //MAKE BATCH LATER
     config.epochs = /*1000*/10;
     config.mutation_probability = 0.3;
-    config.dropout = 1;
+    config.dropout = 0.4;
     config.mutation_method = ALLEL_FLIP;
     config.crossover_method = /*SINGLE_CUT*/DOUBLE_CUT;
-    config.parentingPoolSelection = ELITE;
+    config.parentingPoolSelection = TOURNAMENT;
     config.veteranSelection = ROULETTE;
-    /* config.veteranSelection = TOURNAMENT;
+    /* config.veteranSelection = TOURNAMENT; */
     set_tournament_group_size_factor(0.1);
-    set_tournament_determinism_factor(0.8); */
+    set_tournament_determinism_factor(1); 
     config.chromosome_length = backpack.num_available;
 
     ga_bin_r_basic_startup_config_t startupConfig;
@@ -101,5 +101,6 @@ unsigned char* optimized_backpack_composition_mask(const backpack_t backpack) {
     binary_chromosome solution = ga_bin_r_basic_extreme(_fitness, config, startupConfig);
 
     // static unsigned int[backpack.num_available];
+    //printf("DEBUG FROM bpack_optimizer | FITNESS = %lf\n", *(double*)_fitness((void*)solution));
     return (unsigned char*)solution;
 }
