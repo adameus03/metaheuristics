@@ -38,10 +38,10 @@ int __segregationComparerF(const void* solA, const void* solB, const gaFunc f, c
     static CMP_RESULT comparerResult;
     comparerResult = codomainConfig.comparer(fa, fb);
     if (comparerResult == LEFT) {
-        return -1;
+        return 1;
     }
     else {
-        return 1;
+        return -1;
     }
 }
 
@@ -66,7 +66,7 @@ _gaBlob _gaBlob_loc(const _gaBlob* blob) {
 */
 void segregate(const ga_population_t* population) { //
     // qsort(*(population->members), population->size, _gaBlob_loc(NULL).domainExtent, __segregationComparer);
-    qsort(population->members, population->size, _gaBlob_loc(NULL).domainExtent, __segregationComparer);
+    qsort((population->members), population->size, _gaBlob_loc(NULL).domainExtent, __segregationComparer);
 }
 
 /*
@@ -244,19 +244,19 @@ ga_population_t ranking_select(ga_population_t population,
     // unsigned int totalRank = (population.size * (population.size - 1)) >> 0x1;
     double totalRanking = 0;
     for (unsigned int i = 0; i < population.size; i++) {
-        totalRanking += ((double)1) / (i + 1);
+        totalRanking += ((double)1) / ((double)(i + 1));
     }
     //;
-    static unsigned int i;
-    i = 0;
-    for (; i < selectionSize; i++) {
+    //static unsigned int i;
+    //i = 0;
+    for (unsigned int i = 0; i < selectionSize; i++) {
         r = ((double)rand()) / ((double)RAND_MAX);
-        static double sumRank;
-        sumRank = 0;
+        static double sumRanking;
+        sumRanking = 0;
         for (unsigned int j = 0; j < population.size; j++) {
             // sumFitness += codomainConfig.norm(f(population.members[j]));
-            sumRank += ((double)1) / ((double)(j + 1));
-            if (r < ((double)sumRank) / ((double)totalRanking)) {
+            sumRanking += ((double)1) / ((double)(j + 1));
+            if (r < ((double)sumRanking) / ((double)totalRanking)) {
                 /* static void* temp;
                 temp = population.members[i];
                 population.members[i] = population.members[j];

@@ -88,9 +88,9 @@ unsigned char* optimized_backpack_composition_mask(const backpack_t backpack) {
     config.mutation_probability = 0.3;
     config.dropout = 0.4;
     config.mutation_method = ALLEL_FLIP;
-    config.crossover_method = /*SINGLE_CUT*/DOUBLE_CUT;
-    config.parentingPoolSelection = TOURNAMENT;
-    config.veteranSelection = ROULETTE;
+    config.crossover_method = /*SINGLE_CUT*//*DOUBLE_CUT*/MASK;
+    config.parentingPoolSelection = ELITE/*TOURNAMENT*/;
+    config.veteranSelection = /*ROULETTE*/ /*RANKING*/ ELITE;
     /* config.veteranSelection = TOURNAMENT; */
     set_tournament_group_size_factor(0.1);
     set_tournament_determinism_factor(1); 
