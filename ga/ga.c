@@ -430,7 +430,7 @@ void alabama(const ga_population_t parentingPool, const gaPairFunc crossover) {
         //__tempPopulationStorage_Set(i, )
         for (unsigned int j = i + 1; j < parentingPool.size; j++) {
             _gaBlob_TPBIndex(&childPosition);
-            unsigned char* a = (unsigned char*)parentingPool.members[i]; //
+            /*unsigned char* a = (unsigned char*)parentingPool.members[i]; //
             unsigned char* b = (unsigned char*)parentingPool.members[j]; //
 
             unsigned char a0 = a[0]; //
@@ -441,7 +441,7 @@ void alabama(const ga_population_t parentingPool, const gaPairFunc crossover) {
             unsigned char b0 = b[0]; //
             unsigned char b1 = b[1]; //
             unsigned char b2 = b[2]; //
-            unsigned char b3 = b[3]; //
+            unsigned char b3 = b[3]; //*/
 
             static void* crossoverResult; 
             crossoverResult = crossover(parentingPool.members[i], parentingPool.members[j]); //;p
