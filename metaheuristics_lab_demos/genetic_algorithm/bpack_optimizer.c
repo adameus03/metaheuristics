@@ -84,15 +84,16 @@ unsigned char* optimized_backpack_composition_mask(const backpack_t backpack) {
     ga_bin_set_octet_num(4);
     ga_bin_r_init(200);
     ga_bin_r_basic_config_t config; //MAKE BATCH LATER
-    config.epochs = 1000;
+    config.epochs = /*1000*/10;
     config.mutation_probability = 0.3;
     config.dropout = 1;
     config.mutation_method = ALLEL_FLIP;
-    config.crossover_method = SINGLE_CUT;
+    config.crossover_method = /*SINGLE_CUT*/DOUBLE_CUT;
     config.parentingPoolSelection = ELITE;
-    config.veteranSelection = TOURNAMENT;
+    config.veteranSelection = ROULETTE;
+    /* config.veteranSelection = TOURNAMENT;
     set_tournament_group_size_factor(0.1);
-    set_tournament_determinism_factor(0.8);
+    set_tournament_determinism_factor(0.8); */
     config.chromosome_length = backpack.num_available;
 
     ga_bin_r_basic_startup_config_t startupConfig;

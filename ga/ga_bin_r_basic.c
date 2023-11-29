@@ -43,7 +43,42 @@ unsigned int _chromosome_length(const unsigned int* chromo_length) {
 }
 
 void* reverse_mutate(const void* chromosome) {
-    return NULL;
+    unsigned int num_octets = (_chromosome_length(NULL) >> 0x3) + (_chromosome_length(NULL) % 0x8 != 0x0);
+    unsigned char* ucc = (unsigned char*)chromosome;
+    static unsigned char temp;
+    for (unsigned int i = 0; i < (num_octets >> 0x1); i++) {
+        temp = ucc[i];
+        ucc[i] = ucc[num_octets - i];
+        ucc[num_octets - i] = temp;
+    }
+
+    for (unsigned int i = 0; i < num_octets; i++) {
+        ucc[i] = (ucc[i] & 0xF0) >> 4 | (ucc[i] & 0x0F) << 4;
+        ucc[i] = (ucc[i] & 0xCC) >> 2 | (ucc[i] & 0x33) << 2;
+        ucc[i] = (ucc[i] & 0xAA) >> 1 | (ucc[i] & 0x55) << 1;
+    }
+
+    /*chromolen % 8
+    0 ==> << 0
+    1 ==> << 7
+    2 ==> << 6
+    3 ==> << 5
+    4 ==> << 4
+    5 ==> << 3
+    6 ==> << 2
+    7 ==> << 1*/
+
+    unsigned char overflow = _chromosome_length(NULL) % 0x8;
+    if (overflow) {
+        for (unsigned int i = 0; i < num_octets - 1; i++) {
+            ucc[i] <<= (0x8 - overflow);
+            ucc[i] |= ucc[i + 1] >> overflow;
+        }
+        ucc[num_octets - 1] <<= (0x8 - overflow);
+    }
+    
+    
+    return (void*)chromosome; //sh be ok
 }
 
 void* allel_flip_mutate(const void* chromosome) {
@@ -95,11 +130,81 @@ void* single_cut_crossover(const void* chromosomeA, const void* chromosomeB) {
 }
 
 void* double_cut_crossover(const void* chromosomeA, const void* chromosomeB) {
-    return NULL;
+    unsigned int allel_pos1 = rand() % _chromosome_length(NULL);
+    unsigned int allel_pos2 = rand() % _chromosome_length(NULL);
+    if (allel_pos1 > allel_pos2) {
+        unsigned int temp = allel_pos1;
+        allel_pos1 = allel_pos2;
+        allel_pos2 = temp;
+    }
+    unsigned int allel_octet_pos1 = allel_pos1 >> 0x3;
+    unsigned int allel_octet_pos2 = allel_pos2 >> 0x3; //<<<<<<sdvjio
+    unsigned char allel_offset1 = allel_pos1 % 0x8;
+    unsigned char allel_offset2 = allel_pos2 % 0x8;
+
+    unsigned int num_octets = (_chromosome_length(NULL) >> 0x3) + (_chromosome_length(NULL) % 0x8 != 0x0);
+    
+    unsigned char* ucca;
+    unsigned char* uccb;
+    if (rand() % 2) {
+        ucca = (unsigned char*)chromosomeA;
+        uccb = (unsigned char*)chromosomeB;
+    }
+    else {
+        ucca = (unsigned char*)chromosomeB;
+        uccb = (unsigned char*)chromosomeA;
+    }
+    
+    unsigned char* ucr = _octets_storage(NULL);
+
+    for (unsigned int i = 0; i < allel_octet_pos1; i++) {
+        *(ucr + i) = *(ucca + i);
+    }
+    for (unsigned int i = allel_octet_pos1 + 1; i < allel_octet_pos2; i++) {
+        *(ucr + i) = *(uccb + i);
+    }
+    for (unsigned int i = allel_octet_pos2 + 1; i < num_octets; i++) {
+        *(ucr + i) = *(ucca + i);
+    }
+
+
+    if (allel_octet_pos1 != allel_octet_pos2) {
+        unsigned char msb_mask = ((unsigned char)0xffU) << (0x7U - allel_offset1);
+        unsigned char lsb_mask = ((unsigned char)0xffU) >> allel_offset1;
+        *(ucr + allel_octet_pos1) = msb_mask & *(ucca + allel_octet_pos1);
+        *(ucr + allel_octet_pos1) |= lsb_mask & *(uccb + allel_octet_pos1);
+
+        msb_mask = ((unsigned char)0xffU) << (0x7U - allel_offset2);
+        lsb_mask = ((unsigned char)0xffU) >> allel_offset2;
+        *(ucr + allel_octet_pos2) = msb_mask & *(ucca + allel_octet_pos2);
+        *(ucr + allel_octet_pos2) |= lsb_mask & *(uccb + allel_octet_pos2);
+    }
+    else {
+        unsigned char lb_mask = ((unsigned char)0xffU) << (0x7U - allel_offset1);
+        unsigned char rb_mask = ((unsigned char)0xffU) >> allel_offset2;
+        unsigned char mb_mask = ~(lb_mask | rb_mask);
+
+        *(ucr + allel_octet_pos1) = lb_mask & *(ucca + allel_octet_pos1);
+        *(ucr + allel_octet_pos1) |= mb_mask & *(uccb + allel_octet_pos1);
+        *(ucr + allel_octet_pos1) |= rb_mask & *(ucca + allel_octet_pos1);
+    }
+    
+    
+    return (void*) ucr;
 }
 
 void* mask_crossover(const void* chromosomeA, const void* chromosomeB) {
-    return NULL;
+    // return NULL;
+    unsigned char* ucca = (unsigned char*)chromosomeA;
+    unsigned char* uccb = (unsigned char*)chromosomeB;
+    unsigned int num_octets = (_chromosome_length(NULL) >> 0x3) + (_chromosome_length(NULL) % 0x8 != 0x0);
+    unsigned char* ucr = _octets_storage(NULL);
+    static unsigned char mask;
+    for (unsigned int i = 0; i < num_octets; i++) {
+        mask = rand() % 0x100;
+        ucr[i] = (ucca[i] & ~mask) | (ucca[i] & mask);
+    }
+    return (void*)ucr;
 }
 
 binary_chromosome ga_bin_r_basic_extreme(const gaFunc f, 
