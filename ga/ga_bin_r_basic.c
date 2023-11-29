@@ -203,7 +203,7 @@ void* mask_crossover(const void* chromosomeA, const void* chromosomeB) {
     static unsigned char mask;
     for (unsigned int i = 0; i < num_octets; i++) {
         mask = rand() % 0x100;
-        ucr[i] = (ucca[i] & ~mask) | (ucca[i] & mask);
+        ucr[i] = (ucca[i] & ~mask) | (uccb[i] & mask);
     }
     return (void*)ucr;
 }

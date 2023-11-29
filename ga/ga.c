@@ -443,7 +443,7 @@ void alabama(const ga_population_t parentingPool, const gaPairFunc crossover) {
             unsigned char b2 = b[2]; //
             unsigned char b3 = b[3]; //*/
 
-            static void* crossoverResult; 
+            static void* crossoverResult;
             crossoverResult = crossover(parentingPool.members[i], parentingPool.members[j]); //;p
             _gaBlob_write(&crossoverResult, _TPB);
             // _gaBlob_write(crossoverResult, _TPB);
