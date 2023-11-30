@@ -9,7 +9,7 @@ project(genetic_algorithm_metaheuristics_lab_demos VERSION 0.1.0 LANGUAGES C)
 # add_subdirectory(testDir)
 
 
-add_executable(genetic_algorithm_metaheuristics_lab_demos main.c bpack_optimizer.c bbatch.c)
+add_executable(genetic_algorithm_metaheuristics_lab_demos main.c bpack_optimizer.c bbatch.c bvarlogger.c)
 
 target_link_libraries(${PROJECT_NAME}
     sub::sa

@@ -2,7 +2,8 @@
 #include "bizzare_backpack.h"
 //#include "bpack_optimizer.h"
 //#include "backpack_helper.h"
-#include "bbatch.h"
+//#include "bbatch.h"
+#include "bvarlogger.h"
 
 
 
@@ -35,8 +36,19 @@ void bizzare_backpack_demo() {
     printf("\n");
     print_backpack(backpack, solutionMask);*/
 
-    bbatch_stat_t stats = bbatch("bizzare_backpack", 10, backpack, bpoConfig, VERBOSE);
-    print_stat(stats);
+    /*bbatch_stat_t stats = bbatch("bizzare_backpack", 10, backpack, bpoConfig, VERBOSE);
+    print_stat(stats);*/
+
+    bvarlogger_config_t bvarloggerConfig;
+    bvarloggerConfig.logger_name = "bizzare_backpack";
+    bvarloggerConfig.backpack = backpack;
+    bvarloggerConfig.bpoConfig = bpoConfig;
+
+    init_bvarlogger(bvarloggerConfig);
+    varlog_dropout(0.0, 1.0, 0.01, "bizarre_backpack_dropout___allel_flip___mask___elite___elite.galog");
+    varlog_mutprob(0.0, 1.0, 0.01, "bizarre_backpack_mutprob___allel_flip___mask___elite___elite.galog");
+    varlog_popsize(0, 200, 1, "bizarre_backpack_popsize___allel_flip___mask___elite___elite.galog");
+        
 }
 
 
