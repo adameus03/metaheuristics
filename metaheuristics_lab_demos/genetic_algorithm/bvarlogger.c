@@ -21,7 +21,7 @@ void varlog_dropout(const double minDropoutInclusive, const double maxDropoutExc
     bpoConfig.gbrConfig.dropout = minDropoutInclusive;
     for (; bpoConfig.gbrConfig.dropout < maxDropoutExclusive; bpoConfig.gbrConfig.dropout += stepSize) {
         static bbatch_stat_t bbatchStat;
-        bbatchStat = bbatch(logger_config.logger_name, 10, logger_config.backpack, bpoConfig, QUIET);
+        bbatchStat = bbatch(logger_config.logger_name, 100, logger_config.backpack, bpoConfig, QUIET);
         fprintf(logFilePtr, "%4.5f ", bpoConfig.gbrConfig.dropout);
         oneline_print_stat(logFilePtr, bbatchStat);
     }
@@ -35,7 +35,7 @@ void varlog_mutprob(const double minMutprobInclusive, const double maxMutprobExc
     bpoConfig.gbrConfig.mutation_probability = minMutprobInclusive;
     for (; bpoConfig.gbrConfig.mutation_probability < maxMutprobExclusive; bpoConfig.gbrConfig.mutation_probability += stepSize) {
         static bbatch_stat_t bbatchStat;
-        bbatchStat = bbatch(logger_config.logger_name, 10, logger_config.backpack, bpoConfig, QUIET);
+        bbatchStat = bbatch(logger_config.logger_name, 100, logger_config.backpack, bpoConfig, QUIET);
         fprintf(logFilePtr, "%4.5f ", bpoConfig.gbrConfig.mutation_probability);
         oneline_print_stat(logFilePtr, bbatchStat);
     }
@@ -49,7 +49,7 @@ void varlog_popsize(const unsigned int minPopsizeInclusive, const unsigned int m
     bpoConfig.gaPopulationSize= minPopsizeInclusive;
     for (; bpoConfig.gaPopulationSize < maxPopsizeExclusive; bpoConfig.gaPopulationSize += stepSize) {
         static bbatch_stat_t bbatchStat;
-        bbatchStat = bbatch(logger_config.logger_name, 10, logger_config.backpack, bpoConfig, QUIET);
+        bbatchStat = bbatch(logger_config.logger_name, 100, logger_config.backpack, bpoConfig, QUIET);
         fprintf(logFilePtr, "%d ", bpoConfig.gaPopulationSize);
         oneline_print_stat(logFilePtr, bbatchStat);
     }
