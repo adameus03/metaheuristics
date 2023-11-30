@@ -13,8 +13,8 @@ void bizzare_backpack_demo() {
     gbrConfig.dropout = 0.4;
     gbrConfig.mutation_method = ALLEL_FLIP;
     gbrConfig.crossover_method = MASK;
-    gbrConfig.parentingPoolSelection = ELITE;
-    gbrConfig.veteranSelection = ELITE;
+    gbrConfig.parentingPoolSelection = ROULETTE;
+    gbrConfig.veteranSelection = ROULETTE;
     gbrConfig.chromosome_length = backpack.num_available;
 
     bpack_optimizer_config_t bpoConfig;
@@ -30,13 +30,14 @@ void bizzare_backpack_demo() {
     printf("\n");
     print_backpack(backpack, solutionMask);*/
 
-    /*bbatch_stat_t stats = bbatch("bizzare_backpack", 10, backpack, bpoConfig, VERBOSE);
-    print_stat(stats);*/
+    /*bbatch_stat_t stats = bbatch("bizzare_backpack", 10000, backpack, bpoConfig, QUIET);
+    print_stat(stats); return;*/
 
     bvarlogger_config_t bvarloggerConfig;
     bvarloggerConfig.logger_name = "bizzare_backpack";
     bvarloggerConfig.backpack = backpack;
     bvarloggerConfig.bpoConfig = bpoConfig;
+
 
     ///<mask>
         ///<mask_elite_elite>
@@ -44,6 +45,7 @@ void bizzare_backpack_demo() {
         varlog_dropout(0.0, 1.0, 0.01, "bizarre_backpack_dropout___allel_flip___mask___elite___elite.galog");
         varlog_mutprob(0.0, 1.0, 0.01, "bizarre_backpack_mutprob___allel_flip___mask___elite___elite.galog");
         varlog_popsize(0, 200, 1, "bizarre_backpack_popsize___allel_flip___mask___elite___elite.galog");
+        //varlog_epochs(0, 200, 1, "bizzare_backpack_epochs___lel_flip___mask___elite___elite.galog");
         ///</mask_elite_elite>
         
         ///<mask_roulette_roulette>
@@ -55,6 +57,7 @@ void bizzare_backpack_demo() {
         varlog_dropout(0.0, 1.0, 0.01, "bizarre_backpack_dropout___allel_flip___mask___roulette___roulette.galog");
         varlog_mutprob(0.0, 1.0, 0.01, "bizarre_backpack_mutprob___allel_flip___mask___roulette___roulette.galog");
         varlog_popsize(0, 200, 1, "bizarre_backpack_popsize___allel_flip___mask___roulette___roulette.galog");
+        //varlog_epochs(0, 200, 1, "bizzare_backpack_epochs___allel_flip___mask___roulette___roulette.galog");
         ///</mask_roulette_roulette>
 
         ///<mask_roulette_tournament>
@@ -70,6 +73,7 @@ void bizzare_backpack_demo() {
         varlog_dropout(0.0, 1.0, 0.01, "bizarre_backpack_dropout___allel_flip___mask___roulette___tournament_0_2__prob_1.galog");
         varlog_mutprob(0.0, 1.0, 0.01, "bizarre_backpack_mutprob___allel_flip___mask___roulette___tournament_0_2__prob_1.galog");
         varlog_popsize(0, 200, 1, "bizarre_backpack_popsize___allel_flip___mask___roulette___roulette__tournament_0_2__prob_1.galog");
+        //varlog_epochs(0, 200, 1, "bizzare_backpack_epochs___allel_flip___mask___roulette___roulette__tournament_0_2__prob_1.galog");
         ///</mask_roulette_tournament>
 
 
@@ -82,6 +86,7 @@ void bizzare_backpack_demo() {
         varlog_dropout(0.0, 0.01, 0.0001, "bizarre_backpack_dropout___allel_flip___mask___ranking___ranking.galog");
         varlog_mutprob(0.0, 0.1, 0.001, "bizarre_backpack_mutprob___allel_flip___mask___ranking___ranking.galog");
         varlog_popsize(0, 200, 1, "bizarre_backpack_popsize___allel_flip___mask___ranking___ranking.galog");
+        //varlog_epochs(0, 200, 1, "bizzare_backpack_epochs___allel_flip___mask___ranking___ranking.galog");
         ///</mask_ranking_ranking>
     ///</mask>
 
@@ -96,6 +101,7 @@ void bizzare_backpack_demo() {
         varlog_dropout(0.0, 1.0, 0.01, "bizarre_backpack_dropout___allel_flip___singlecut___elite___elite.galog");
         varlog_mutprob(0.0, 1.0, 0.01, "bizarre_backpack_mutprob___allel_flip___singlecut___elite___elite.galog");
         varlog_popsize(0, 200, 1, "bizarre_backpack_popsize___allel_flip___singlecut___elite___elite.galog");
+        //varlog_epochs(0, 200, 1, "bizzare_backpack_epochs___allel_flip___singlecut___elite___elite.galog");
         ///</singlecut_elite_elite>
         
         ///<singlecut_roulette_roulette>
@@ -107,6 +113,7 @@ void bizzare_backpack_demo() {
         varlog_dropout(0.0, 1.0, 0.01, "bizarre_backpack_dropout___allel_flip___singlecut___roulette___roulette.galog");
         varlog_mutprob(0.0, 1.0, 0.01, "bizarre_backpack_mutprob___allel_flip___singlecut___roulette___roulette.galog");
         varlog_popsize(0, 200, 1, "bizarre_backpack_popsize___allel_flip___singlecut___roulette___roulette.galog");
+        //varlog_epochs(0, 200, 1, "bizzare_backpack_epochs___allel_flip___singlecut___roulette___roulette.galog");
         ///</singlecut_roulette_roulette>
 
         ///<singlecut_roulette_tournament>
@@ -118,6 +125,7 @@ void bizzare_backpack_demo() {
         varlog_dropout(0.0, 1.0, 0.01, "bizarre_backpack_dropout___allel_flip___singlecut___roulette___tournament_0_2__prob_1.galog");
         varlog_mutprob(0.0, 1.0, 0.01, "bizarre_backpack_mutprob___allel_flip___singlecut___roulette___tournament_0_2__prob_1.galog");
         varlog_popsize(0, 200, 1, "bizarre_backpack_popsize___allel_flip___singlecut___roulette___roulette__tournament_0_2__prob_1.galog");
+        //varlog_epochs(0, 200, 1, "bizzare_backpack_epochs___allel_flip___singlecut___roulette___roulette__tournament_0_2__prob_1.galog");
         ///</singlecut_roulette_tournament>
 
 
@@ -130,6 +138,7 @@ void bizzare_backpack_demo() {
         varlog_dropout(0.0, 0.01, 0.0001, "bizarre_backpack_dropout___allel_flip___singlecut___ranking___ranking.galog");
         varlog_mutprob(0.0, 0.1, 0.001, "bizarre_backpack_mutprob___allel_flip___singlecut___ranking___ranking.galog");
         varlog_popsize(0, 200, 1, "bizarre_backpack_popsize___allel_flip___singlecut___ranking___ranking.galog");
+        //varlog_epochs(0, 200, 1, "bizzare_backpack_epochs___allel_flip___singlecut___ranking___ranking.galog");
         ///</singlecut_ranking_ranking>
     ///</singlecut>
 
@@ -144,6 +153,7 @@ void bizzare_backpack_demo() {
         varlog_dropout(0.0, 1.0, 0.01, "bizarre_backpack_dropout___allel_flip___doublecut___elite___elite.galog");
         varlog_mutprob(0.0, 1.0, 0.01, "bizarre_backpack_mutprob___allel_flip___doublecut___elite___elite.galog");
         varlog_popsize(0, 200, 1, "bizarre_backpack_popsize___allel_flip___doublecut___elite___elite.galog");
+        //varlog_epochs(0, 200, 1, "bizzare_backpack_epochs___allel_flip___doublecut___elite___elite.galog");
         ///</doublecut_elite_elite>
         
         ///<doublecut_roulette_roulette>
@@ -155,6 +165,7 @@ void bizzare_backpack_demo() {
         varlog_dropout(0.0, 1.0, 0.01, "bizarre_backpack_dropout___allel_flip___doublecut___roulette___roulette.galog");
         varlog_mutprob(0.0, 1.0, 0.01, "bizarre_backpack_mutprob___allel_flip___doublecut___roulette___roulette.galog");
         varlog_popsize(0, 200, 1, "bizarre_backpack_popsize___allel_flip___doublecut___roulette___roulette.galog");
+        //varlog_epochs(0, 200, 1, "bizzare_backpack_epochs___allel_flip___doublecut___roulette___roulette.galog");
         ///</doublecut_roulette_roulette>
 
         ///<doublecut_roulette_tournament>
@@ -166,6 +177,7 @@ void bizzare_backpack_demo() {
         varlog_dropout(0.0, 1.0, 0.01, "bizarre_backpack_dropout___allel_flip___doublecut___roulette___tournament_0_2__prob_1.galog");
         varlog_mutprob(0.0, 1.0, 0.01, "bizarre_backpack_mutprob___allel_flip___doublecut___roulette___tournament_0_2__prob_1.galog");
         varlog_popsize(0, 200, 1, "bizarre_backpack_popsize___allel_flip___doublecut___roulette___roulette__tournament_0_2__prob_1.galog");
+        //varlog_epochs(0, 200, 1, "bizzare_backpack_epochs___allel_flip___doublecut___roulette___roulette__tournament_0_2__prob_1.galog");
         ///</doublecut_roulette_tournament>
 
 
@@ -178,6 +190,7 @@ void bizzare_backpack_demo() {
         varlog_dropout(0.0, 0.01, 0.0001, "bizarre_backpack_dropout___allel_flip___doublecut___ranking___ranking.galog");
         varlog_mutprob(0.0, 0.1, 0.001, "bizarre_backpack_mutprob___allel_flip___doublecut___ranking___ranking.galog");
         varlog_popsize(0, 200, 1, "bizarre_backpack_popsize___allel_flip___doublecut___ranking___ranking.galog");
+        //varlog_epochs(0, 200, 1, "bizzare_backpack_epochs___allel_flip___doublecut___ranking___ranking.galog");
         ///</doublecut_ranking_ranking>
     ///</doublecut>
 

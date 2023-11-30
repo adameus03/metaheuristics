@@ -17,5 +17,9 @@ void varlog_dropout(const double minDropoutInclusive, const double maxDropoutExc
 void varlog_mutprob(const double minMutprobInclusive, const double maxMutprobExclusive,
                     const double stepSize, const char* logFilePath);
 
-void varlog_popsize(const unsigned int minPopsize, const unsigned int maxPopsize,
-                    const double stepSize, const char* logFilePath);
+void varlog_popsize(const unsigned int minPopsizeInclusive, const unsigned int maxPopsizeExclusive,
+                    const unsigned int stepSize, const char* logFilePath);
+
+
+void varlog_epochs(const unsigned int minEpochsInclusive, const unsigned int maxEpochsExclusive,
+                    const unsigned int stepSize, const char* logFilePath);

@@ -43,7 +43,7 @@ void varlog_mutprob(const double minMutprobInclusive, const double maxMutprobExc
 }
 
 void varlog_popsize(const unsigned int minPopsizeInclusive, const unsigned int maxPopsizeExclusive,
-                    const double stepSize, const char* logFilePath) {
+                    const unsigned int stepSize, const char* logFilePath) {
     FILE* logFilePtr = fopen(logFilePath, "w");
     bpack_optimizer_config_t bpoConfig = logger_config.bpoConfig;
     bpoConfig.gaPopulationSize= minPopsizeInclusive;
@@ -51,6 +51,20 @@ void varlog_popsize(const unsigned int minPopsizeInclusive, const unsigned int m
         static bbatch_stat_t bbatchStat;
         bbatchStat = bbatch(logger_config.logger_name, 100, logger_config.backpack, bpoConfig, QUIET);
         fprintf(logFilePtr, "%d ", bpoConfig.gaPopulationSize);
+        oneline_print_stat(logFilePtr, bbatchStat);
+    }
+    fclose(logFilePtr);
+}
+
+void varlog_epochs(const unsigned int minEpochsInclusive, const unsigned int maxEpochsExclusive,
+                    const unsigned int stepSize, const char* logFilePath) {
+    FILE* logFilePtr = fopen(logFilePath, "w");
+    bpack_optimizer_config_t bpoConfig = logger_config.bpoConfig;
+    bpoConfig.gbrConfig.epochs = minEpochsInclusive;
+    for (; bpoConfig.gbrConfig.epochs < maxEpochsExclusive; bpoConfig.gbrConfig.epochs += stepSize) {
+        static bbatch_stat_t bbatchStat;
+        bbatchStat = bbatch(logger_config.logger_name, 100, logger_config.backpack, bpoConfig, QUIET);
+        fprintf(logFilePtr, "%d ", bpoConfig.gbrConfig.epochs);
         oneline_print_stat(logFilePtr, bbatchStat);
     }
     fclose(logFilePtr);
