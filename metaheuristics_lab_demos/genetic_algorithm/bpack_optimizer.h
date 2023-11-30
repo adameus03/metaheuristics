@@ -1,10 +1,6 @@
 #include "../data/backpack.h"
 #include "../ga/ga_bin_r_basic.h"
 
-//unsigned char* optimized_backpack_composition_mask(const backpack_t backpack);
-/*unsigned char* optimized_backpack_composition_mask(const backpack_t backpack, 
-                                                   const ga_bin_r_basic_config_t config, 
-                                                   const unsigned int gaPopulationSize);*/
 
 typedef struct {
     ga_bin_r_basic_config_t gbrConfig;

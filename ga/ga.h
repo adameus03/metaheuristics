@@ -5,7 +5,7 @@ typedef double (*gaPairScalarFunc)(const void*, const void*);
 typedef struct {
     unsigned int size;
     void** members;
-} ga_population_t; //sa_type consistency?
+} ga_population_t;
 
 typedef ga_population_t* (*gaGenerator)();
 typedef enum { LEFT, RIGHT } CMP_RESULT;
@@ -17,22 +17,22 @@ typedef enum {
     ELITE
 } SELECTION_METHOD;
 
+/**
+ * Structure instance containing the algorithm's input conditions and operaton modes
+*/
 typedef struct {
     unsigned int epochs;
     double mutation_probability; 
     double dropout;
-    gaFunc mutate; //maybe add multiple mutations (with respective probablities) later?
-    gaPairFunc crossover; //maybe add multiple crossovers later?
+    gaFunc mutate;
+    gaPairFunc crossover;
     SELECTION_METHOD parentingPoolSelection;
     SELECTION_METHOD veteranSelection;
 } ga_config_t;
 
-/* typedef struct {
-    unsigned int size;
-    void** members;
-} ga_population_t; */ //sa_type consistency?
-
-
+/**
+ * Structure instance containing domain space configuration for the algorithm's initial population generator
+*/
 typedef struct {
     gaGenerator domainGenerator;
 } ga_domain_config_t;
@@ -50,12 +50,14 @@ typedef struct {
     gaScalarFunc norm;
 } ga_codomain_config_t;
 
-
-/* void /^ga_population_t^/ evolve(const ga_population_t* population, 
-                       const gaFunc f, 
-                       const ga_config_t config, 
-                       const ga_codomain_config_t codomainConfig);*/ //maybe instead of returning, update a variable which could be read by different process during GA's execution?
-
+/**
+ * @brief The core general function used to run the genetic algorithm.
+ * @param f The fitness function to be optimized
+ * @param config Structure instance containing the algorithm's input conditions and operaton modes
+ * @param domainConfig Structure instance containing domain space configuration for the algorithm's initial population generator
+ * @param codomainConfig Structure instance containing f function's codomain configuration for the algorithm
+ * @returns The best solution from the final generation of the population, depending on the algorithms configuration
+*/
 void* ga_extreme(const gaFunc f, 
                  const ga_config_t config, 
                  const ga_domain_config_t domainConfig,
@@ -100,14 +102,3 @@ _gaBlob _gaBlob_loc(const _gaBlob* blob);
     blob.tempPopulationBufferLength = N; \
     _gaBlob_loc(&blob); \
 })
-
-/*static domainType tempPopulationStorage[N];
-void __tempPopulationStorage_Set(unsigned int index, domainType value) { 
-    tempPopulationStorage[index] = value; 
-} 
-unsigned int __tempPopulationStorage_Size() { 
-    return N; 
-} 
-void* __tempPopulationStorage_Get(unsigned int index) { 
-    return (void*)(tempPopulationStorage + index); 
-} */

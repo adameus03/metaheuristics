@@ -1,15 +1,11 @@
 #include <stdio.h>
 #include "bizzare_backpack.h"
-//#include "bpack_optimizer.h"
-//#include "backpack_helper.h"
-//#include "bbatch.h"
 #include "bvarlogger.h"
 
 
 
 void bizzare_backpack_demo() {
     backpack_t backpack = get_bizzare_backpack();
-    // genes_loc(40 * 4);
 
     ga_bin_r_basic_config_t gbrConfig;
     gbrConfig.epochs = 10;
@@ -26,8 +22,6 @@ void bizzare_backpack_demo() {
     bpoConfig.gaPopulationSize = 200;
     bpoConfig.tournamentGroupSizePtr = NULL;
     bpoConfig.tournamentDeterminismFactorPtr = NULL;
-
-    
 
     /*unsigned char* solutionMask = optimized_backpack_composition_mask(backpack, bpoConfig);
     
@@ -192,10 +186,6 @@ void bizzare_backpack_demo() {
 
 int main() {
     printf("Place for genetic algorighm demos batch run\n");
-    /* backpack_t bizzareBackpack = get_bizzare_backpack();
-    for (unsigned int i = 0; i < bizzareBackpack.num_available; i++) {
-        printf("%d %s\n", i, bizzareBackpack.available_names[i]);
-    } */
     bizzare_backpack_demo();
     return 0;
 }

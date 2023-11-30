@@ -1,19 +1,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <time.h>
-//#include <stdio.h> //debug
 #include "ga.h"
-// #include "ga_selections.h"
-
-/* typedef struct {
-    unsigned int epochs;
-    double mutation_probability; 
-    double dropout;
-    gaFunc mutate; //maybe add multiple mutations (with respective probablities) later?
-    gaPairFunc crossover; //maybe add multiple crossovers later?
-    SELECTION_METHOD parentingPoolSelection;
-    SELECTION_METHOD veteranSelection;
-} ga_config_t; */
 
 ga_codomain_config_t __codomainConfig(const ga_codomain_config_t* codomainConfig) {
     static ga_codomain_config_t _codomainConfig;
@@ -65,7 +53,6 @@ _gaBlob _gaBlob_loc(const _gaBlob* blob) {
  * @param population The population to be segregated
 */
 void segregate(const ga_population_t* population) { //
-    // qsort(*(population->members), population->size, _gaBlob_loc(NULL).domainExtent, __segregationComparer);
     qsort((population->members), population->size, _gaBlob_loc(NULL).domainExtent, __segregationComparer);
 }
 
@@ -116,13 +103,11 @@ void* _gaBlob_access(const void* dataPtr, const _gaBlobID blobId, const _gaBlobA
     if (blobId == _S) {
         blobPtr = blob.blobDomainPtr;
         blobCurrentUnitSize = blob.domainExtent;
-        // blobUnitIndex = blobId == _BS;
         blobUnitIndex = 0;
     }
     else if (blobId == _SM) {
         blobPtr = blob.blobCodomainPtr;
         blobCurrentUnitSize = blob.codomainExtent;
-        // blobUnitIndex = blobId == _BSM;
         blobUnitIndex = 0;
     }
     else if (blobId == _TPB) {
@@ -162,6 +147,9 @@ void _gaBlob_write(const void* dataPtr, const _gaBlobID blobId) {
     _gaBlob_access(dataPtr, blobId, _WRITE);
 }
 
+/**
+ * Elite selection for the genetic algorithm
+*/
 ga_population_t elite_select(ga_population_t population,
                              const gaFunc f,
                              const unsigned int selectionSize) {
@@ -172,12 +160,12 @@ ga_population_t elite_select(ga_population_t population,
     return selectedPopulation;
 }
 
+/**
+ * Roulette selection for the genetic algorithm
+*/
 ga_population_t roulette_select(ga_population_t population,
                                const gaFunc f, 
                                const unsigned int selectionSize) {
-    // {{{implement}}}
-    // use blob as in SA to store parents/veterans? Consistency?
-    // No, just use the pointers to evolve's population parameter
     static ga_population_t selectedPopulation;
     static ga_codomain_config_t codomainConfig;
     codomainConfig = __codomainConfig(NULL);
@@ -193,14 +181,12 @@ ga_population_t roulette_select(ga_population_t population,
     // Could be optimized in cost of using additional memory (storing members fitness)
     for (unsigned int i = 0; i < population.size; i++) {
         totalFitness += codomainConfig.norm(f(population.members[i]));
-        // totalFitness += *(double*)f(population.members[i]);
     }
 
     if (totalFitness == 0) {
         ga_population_t trimmedPopulation;
         trimmedPopulation.size = selectionSize;
         trimmedPopulation.members = population.members;
-        // printf ("\n(Total fitness was 0)\n");
         return trimmedPopulation;
     }
 
@@ -211,10 +197,6 @@ ga_population_t roulette_select(ga_population_t population,
         for (unsigned int j = 0; j < population.size; j++) {
             sumFitness += codomainConfig.norm(f(population.members[j]));
             if (r < ((double)sumFitness) / ((double)totalFitness)) {
-                /* static void* temp;
-                temp = population.members[i];
-                population.members[i] = population.members[j];
-                population.members[j] = temp; */
                 _gaBlob_SELBUFIndex(&i);
                 _gaBlob_write(population.members + j, _SELBUF);
                 break;
@@ -224,10 +206,12 @@ ga_population_t roulette_select(ga_population_t population,
     return selectedPopulation;
 }
 
+/**
+ * Rank selection for the genetic algorithm
+*/
 ga_population_t ranking_select(ga_population_t population,
                              const gaFunc f,
                              const unsigned int selectionSize) {
-    // {{{implement}}}
     segregate(&population);
     static ga_population_t selectedPopulation;
     static ga_codomain_config_t codomainConfig;
@@ -235,32 +219,21 @@ ga_population_t ranking_select(ga_population_t population,
     static double r;
 
     selectedPopulation.size = selectionSize;
-    // selectedPopulation.members = population.members;
     static void** selectedPopulationBuffer;
     selectedPopulationBuffer = (void**)(_gaBlob_loc(NULL).blobSelectionPtr);
     selectedPopulation.members = selectedPopulationBuffer;
 
-    // unsigned int totalRank = (selectionSize * (selectionSize - 1)) >> 0x1;
-    // unsigned int totalRank = (population.size * (population.size - 1)) >> 0x1;
     double totalRanking = 0;
     for (unsigned int i = 0; i < population.size; i++) {
         totalRanking += ((double)1) / ((double)(i + 1));
     }
-    //;
-    //static unsigned int i;
-    //i = 0;
     for (unsigned int i = 0; i < selectionSize; i++) {
         r = ((double)rand()) / ((double)RAND_MAX);
         static double sumRanking;
         sumRanking = 0;
         for (unsigned int j = 0; j < population.size; j++) {
-            // sumFitness += codomainConfig.norm(f(population.members[j]));
             sumRanking += ((double)1) / ((double)(j + 1));
             if (r < ((double)sumRanking) / ((double)totalRanking)) {
-                /* static void* temp;
-                temp = population.members[i];
-                population.members[i] = population.members[j];
-                population.members[j] = temp; */
                 _gaBlob_SELBUFIndex(&i);
                 _gaBlob_write(population.members + j, _SELBUF);
                 break;
@@ -309,10 +282,12 @@ void set_tournament_determinism_factor(const double p) {
     _tournament_determinism_factor(&_determinismFactor);
 }
 
+/**
+ * Tournamnet selection for the genetic algorithm
+*/
 ga_population_t tournament_select(ga_population_t population,
                              const gaFunc f,
                              const unsigned int selectionSize) {
-    // {{{implement}}}
     static ga_population_t selectedPopulation;
     static ga_codomain_config_t codomainConfig;
     codomainConfig = __codomainConfig(NULL);
@@ -322,11 +297,9 @@ ga_population_t tournament_select(ga_population_t population,
     selectedPopulationBuffer = (void**)(_gaBlob_loc(NULL).blobSelectionPtr);
     selectedPopulation.members = selectedPopulationBuffer;
 
-    // segregate(&population);
-
     unsigned int tournament_groupsize = _tournament_group_size_factor(NULL) * population.size;
     double p = _tournament_determinism_factor(NULL);
-    // {{{CHANGE FROM HERE; done}}} 
+    
     for (unsigned int i = 0; i < selectionSize; i++) {
         static ga_population_t tournamentGroup;
         static void** tournamentMembersBuf;
@@ -337,36 +310,12 @@ ga_population_t tournament_select(ga_population_t population,
         for (unsigned int j = 0; j < tournament_groupsize; j++) {
             static unsigned int tournamentMemberIndex;
             tournamentMemberIndex = rand() % population.size;
-            // tournamentGroup.members[i] = population.members[tournamentMemberIndex]; //{{{replace with this / =>remove blob io funcs?}}} 
-            _gaBlob_TOURGRPIndex(&j);//
+            _gaBlob_TOURGRPIndex(&j);
             _gaBlob_write(population.members + tournamentMemberIndex, _TOURGRP);
         }
 
         segregate(&tournamentGroup);
-        // static double currentCumulativeProbability;
-        // static double currentProbability;
-        // currentCumulativeProbability = 0;
-
         static double r;
-        // r = ((double)rand()) / ((double)RAND_MAX);
-        
-        // currentProbability = p;
-        // currentCumulativeProbability += currentProbability;
-        /* if (r < currentCumulativeProbability) {
-            _gaBlob_SELBUFIndex(&i);
-            _gaBlob_write(tournamentGroup.members, _SELBUF);
-        }
-        else {
-            for (unsigned int j = 1; j < tournament_groupsize; j++) {
-                currentProbability *= 1 - p;
-                currentCumulativeProbability += currentProbability;
-                if (r < currentCumulativeProbability) {
-                    _gaBlob_SELBUFIndex(&i);
-                    _gaBlob_write(tournamentGroup.members + j, _SELBUF);
-                    break;
-                }
-            }
-        }*/
         static unsigned char selected;
         selected = 0x0;
         for (unsigned int j = 0; j < tournament_groupsize - 1; j++) {
@@ -387,6 +336,14 @@ ga_population_t tournament_select(ga_population_t population,
     return selectedPopulation;
 }
 
+/**
+ * @brief Filter population using a chosen selection method
+ * @param population Population to filter
+ * @param f Fitness function used for the population filtering
+ * @param selectionSize Size of the subpopulation to be selected
+ * @param selectionMethod The selection type used to perform the subpopulation selection
+ * @returns The subpopulation based on the input population filtering
+*/
 ga_population_t select_subpopulation(ga_population_t population, 
                        const gaFunc f, 
                        const unsigned int selectionSize,
@@ -409,12 +366,6 @@ ga_population_t select_subpopulation(ga_population_t population,
     return selectedPool;
 }
 
-
-
-
-
-
-
 void _gaRandom_guard() {
     static unsigned char guard = 0x1;
     if (guard) {
@@ -423,77 +374,78 @@ void _gaRandom_guard() {
     }
 }
 
-void alabama(const ga_population_t parentingPool, const gaPairFunc crossover) {
+/**
+ * @brief Execute crossovers on the provided subpopulation
+ * @param parentingPool The subpopulation to execute crossovers on
+ * @param crossover The crossover function to be executed
+*/
+void crossoverHub(const ga_population_t parentingPool, const gaPairFunc crossover) {
     static unsigned int childPosition;
     childPosition = 0;
     for (unsigned int i = 0; i < parentingPool.size - 1; i++) {
-        //__tempPopulationStorage_Set(i, )
         for (unsigned int j = i + 1; j < parentingPool.size; j++) {
             _gaBlob_TPBIndex(&childPosition);
-            /*unsigned char* a = (unsigned char*)parentingPool.members[i]; //
-            unsigned char* b = (unsigned char*)parentingPool.members[j]; //
-
-            unsigned char a0 = a[0]; //
-            unsigned char a1 = a[1]; //
-            unsigned char a2 = a[2]; //
-            unsigned char a3 = a[3]; //
-
-            unsigned char b0 = b[0]; //
-            unsigned char b1 = b[1]; //
-            unsigned char b2 = b[2]; //
-            unsigned char b3 = b[3]; //*/
-
             static void* crossoverResult;
-            crossoverResult = crossover(parentingPool.members[i], parentingPool.members[j]); //;p
+            crossoverResult = crossover(parentingPool.members[i], parentingPool.members[j]);
             _gaBlob_write(&crossoverResult, _TPB);
-            // _gaBlob_write(crossoverResult, _TPB);
             childPosition++;
         }
     }
 }
 
-void fukushima(const double mutation_probability, const gaFunc mutation, const unsigned int fukushimaPopulationSize) {
+/**
+ * @brief Execute mutations on a part of population
+ * @param mutation_probability The probability that the mutation hub will issue a mutation on the target subpopulation
+ * @param mutation The crossover function to be executed
+ * @param mutationHubPopulationSize The size of the target subpopulation
+ * @note For this function to mutate only the descendants subpopulation, it is assumed that the descendants are stored at the beginning of the backend population buffer
+*/
+void mutationHub(const double mutation_probability, const gaFunc mutation, const unsigned int mutationHubPopulationSize) {
     static unsigned int totalMutations;
-    totalMutations = round(mutation_probability * fukushimaPopulationSize);
+    totalMutations = round(mutation_probability * mutationHubPopulationSize);
 
     for (unsigned int i = 0; i < totalMutations; i++) {
-        static unsigned int fukushimaMemberPosition;
-        // fukushimaMemberPosition = rand() % totalMutations;
-        fukushimaMemberPosition = rand() % fukushimaPopulationSize;
-        _gaBlob_TPBIndex(&fukushimaMemberPosition);
-        static void* fukushimaMember;
-        // fukushimaMember = _gaBlob_read(_TPB);
-        fukushimaMember = *(void**)_gaBlob_read(_TPB); //?
+        static unsigned int mutationHubMemberPosition;
+        mutationHubMemberPosition = rand() % mutationHubPopulationSize;
+        _gaBlob_TPBIndex(&mutationHubMemberPosition);
+        static void* mutationHubMember;
+        mutationHubMember = *(void**)_gaBlob_read(_TPB);
         static void* mutationResult;
-        mutationResult = mutation(fukushimaMember);
+        mutationResult = mutation(mutationHubMember);
         _gaBlob_write(&mutationResult, _TPB);
-        //_gaBlob_write(mutationResult, _TPB);
     }
 }
 
+/**
+ * @brief Extend the population by the descendants using members stored in a backend buffer
+ * @param currentPopulation Population to be extended
+ * @param numBirths Number of descendants to have births executed
+ * @returns The extended population
+*/
 ga_population_t execute_births(const ga_population_t currentPopulation, const unsigned int numBirths) {
     static ga_population_t extendedPopulation;
-    // static void* populationBuffer;
     static void** populationBuffer;
     extendedPopulation.size = currentPopulation.size + numBirths;
-    // populationBuffer = _gaBlob_loc(NULL).blobTempPopulationPtr; //
     populationBuffer = (void**)(_gaBlob_loc(NULL).blobTempPopulationPtr);
-    // extendedPopulation.members = &populationBuffer; //
     extendedPopulation.members = populationBuffer;
     for (unsigned int i = 0; i < currentPopulation.size; i++) {
         static unsigned int existingMemberPosition;
         existingMemberPosition = numBirths + i;
         _gaBlob_TPBIndex(&existingMemberPosition);
         _gaBlob_write(currentPopulation.members + i, _TPB);
-        // _gaBlob_write(currentPopulation.members[i], _TPB);
-        // _gaBlob_write(currentPopulation.members, _TPB);
     }
-    //populationBuffer = _gaBlob_loc(NULL).blobTempPopulationPtr;
-    //extendedPopulation.members = &populationBuffer;
     return extendedPopulation;
 }
 
-void/*ga_population_t*/ evolve(ga_population_t* population, 
+/**
+ * @brief The function used to execute the evolution for the genetic algorithm.
+ * @param population - pointer to the population structure instance which value will be updated by this procedure
+ * @param f The fitness function to be optimized
+ * @param config Structure instance containing the algorithm's input conditions and operaton modes
+ * @param domainConfig Structure instance containing domain space configuration for the algorithm's initial population generator
+ * @param codomainConfig Structure instance containing f function's codomain configuration for the algorithm
+*/
+void evolve(ga_population_t* population, 
                        const gaFunc f, 
                        const ga_config_t config, 
                        const ga_codomain_config_t codomainConfig) {
@@ -519,22 +471,18 @@ void/*ga_population_t*/ evolve(ga_population_t* population,
         static unsigned int numDescendants;
         static unsigned int numAncestors;
         numDescendants = config.dropout * population->size;
-        numAncestors = ceil(0.5 + sqrt(numDescendants << 1)); // {{{check if won't bug}}}
-
-        // assert(numDescendants == numAscestors * (numAncestors - 1) / 2); //debug
-
+        numAncestors = ceil(0.5 + sqrt(numDescendants << 1));
         parentingPool = select_subpopulation(*population, f, numAncestors, config.parentingPoolSelection);// <<< ADD iteratively to POOOL
-        // segregate(population);
-        alabama(parentingPool, config.crossover);
-        fukushima(config.mutation_probability, config.mutate, numAncestors);
-        // {{{cont}}}
+        
+        crossoverHub(parentingPool, config.crossover);
+        mutationHub(config.mutation_probability, config.mutate, numAncestors);
+        
         static ga_population_t extendedPopulation;
         extendedPopulation = execute_births(*population, numDescendants);
 
         static ga_population_t veterans;
         veterans = select_subpopulation(extendedPopulation, f, population->size, config.veteranSelection);
 
-        // *population = veterans;
         population->size = veterans.size;
         for (unsigned int i = 0; i < population->size; i++) {
             population->members[i] = veterans.members[i];
@@ -542,6 +490,14 @@ void/*ga_population_t*/ evolve(ga_population_t* population,
     }
 }
 
+/**
+ * @brief The core general function used to run the genetic algorithm.
+ * @param f The fitness function to be optimized
+ * @param config Structure instance containing the algorithm's input conditions and operaton modes
+ * @param domainConfig Structure instance containing domain space configuration for the algorithm's initial population generator
+ * @param codomainConfig Structure instance containing f function's codomain configuration for the algorithm
+ * @returns The best solution from the final generation of the population, depending on the algorithms configuration
+*/
 void* ga_extreme(const gaFunc f, 
                  const ga_config_t config, 
                  const ga_domain_config_t domainConfig,
@@ -551,13 +507,10 @@ void* ga_extreme(const gaFunc f,
     //initialize population
     ga_population_t* population = domainConfig.domainGenerator();
     evolve(population, f, config, codomainConfig);
-    //{{{implement}}}
-    // return best solution
 
-    //{{{check if population is not empty?}}}
     _gaBlob_write(population->members[0], _S);
     _gaBlob_write(f(population->members[0]), _SM);
-    // {{{maybe do this in each generation?}}} 
+    
     for (unsigned int i = 1; i < population->size; i++) {
         static CMP_RESULT comparerResult;
         static void* candidate;
@@ -565,15 +518,13 @@ void* ga_extreme(const gaFunc f,
         candidate = population->members[i];
         candidateMeasure = f(candidate);
         comparerResult = codomainConfig.comparer(_gaBlob_read(_SM), candidateMeasure);
-        // comparerResult = codomainConfig.comparer(*(void**)_gaBlob_read(_SM), candidateMeasure);
+       
         if (comparerResult == RIGHT) {
             _gaBlob_write(candidate, _S);
             _gaBlob_write(candidateMeasure, _SM);
         }
     }
 
-    //printf("DEBUG FROM ga | FITNESS = %lf\n", *(double*)f(_gaBlob_read(_S)));
     return (void*)_gaBlob_read(_S);
-    // return *(void**)_gaBlob_read(_S);
 }
 

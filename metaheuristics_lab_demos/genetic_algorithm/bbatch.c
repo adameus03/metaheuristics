@@ -35,7 +35,6 @@ bbatch_stat_t bbatch(const char* batch_name, const unsigned long int runTimes,
     sumStat.bpack_content_fitness = 0;
     sumStat.bpack_content_weight = 0;
     
-    //printf("\nRunning backpack batch \"%s\" of size %d with params: T=%4.2f, k=%4.2f, a=%4.5f, epochs=%d, iters=%d, memory=%s, mode=%s\n\n", batch_name, runTimes, config.temperature, config.boltzmann_k, config.cooldown, config.epochs, config.epoch_iters, config.mem_mode==WITH_MEMORY?"yes":"no", config.emode==MAX?"max":"min");
     char* mut_meth = bpoConfig.gbrConfig.mutation_method == ALLEL_FLIP ? "ALLEL_FLIP" : "REVERSE";
     char* cross_meth;
     switch (bpoConfig.gbrConfig.crossover_method) {

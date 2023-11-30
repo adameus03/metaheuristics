@@ -11,11 +11,6 @@ typedef enum {
     REVERSE
 } MUTATION_METHOD;
 
-/* typedef struct {
-    unsigned char* genes;
-    // unsigned int num_genes;
-} binary_chromosome_t; */
-
 typedef unsigned char* binary_chromosome;
 
 typedef struct {
