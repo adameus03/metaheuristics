@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include "bizzare_backpack.h"
-#include "bpack_optimizer.h"
-#include "backpack_helper.h"
+//#include "bpack_optimizer.h"
+//#include "backpack_helper.h"
+#include "bbatch.h"
 
 
 
@@ -25,15 +26,17 @@ void bizzare_backpack_demo() {
     bpoConfig.tournamentGroupSizePtr = NULL;
     bpoConfig.tournamentDeterminismFactorPtr = NULL;
 
+    
 
-
-    //unsigned char* solutionMask = optimized_backpack_composition_mask(backpack);
-    unsigned char* solutionMask = optimized_backpack_composition_mask(backpack, bpoConfig);
-    // print_backpack(backpack, solutionMask);
+    /*unsigned char* solutionMask = optimized_backpack_composition_mask(backpack, bpoConfig);
+    
     printf("\n");
     print_backpack_composition_mask(backpack, solutionMask);
     printf("\n");
-    print_backpack(backpack, solutionMask);
+    print_backpack(backpack, solutionMask);*/
+
+    bbatch_stat_t stats = bbatch("bizzare_backpack", 10, backpack, bpoConfig, VERBOSE);
+    print_stat(stats);
 }
 
 

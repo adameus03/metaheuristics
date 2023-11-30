@@ -37,3 +37,34 @@ void print_backpack(const backpack_t backpack, unsigned char* compositionMask) {
         printf("Collected value: %u\n", content_value);
     }
 }
+
+unsigned int calc_backpack_composition_weight(const backpack_t backpack, unsigned char* compositionMask) {
+    unsigned int content_weight = 0;
+    for (unsigned int i = 0; i < backpack.num_available; i++) {
+        if (compositionMask[i >> 0x3] & (((unsigned char)0x80U) >> (i % 0x8))) {
+            content_weight += backpack.available_weights[i];
+        }
+    }
+    return content_weight;
+}
+unsigned int calc_backpack_composition_value(const backpack_t backpack, unsigned char* compositionMask) {
+    unsigned int content_value = 0;
+    for (unsigned int i = 0; i < backpack.num_available; i++) {
+        if (compositionMask[i >> 0x3] & (((unsigned char)0x80U) >> (i % 0x8))) {
+            content_value += backpack.available_values[i];
+        }
+    }
+    return content_value;
+}
+
+unsigned int calc_backpack_composition_fitness(const backpack_t backpack, unsigned char* compositionMask) {
+    unsigned int content_value = 0;
+    unsigned int content_weight = 0;
+    for (unsigned int i = 0; i < backpack.num_available; i++) {
+        if (compositionMask[i >> 0x3] & (((unsigned char)0x80U) >> (i % 0x8))) {
+            content_value += backpack.available_values[i];
+            content_weight += backpack.available_weights[i];
+        }
+    }
+    return content_weight <= backpack.backpack_capacity ? content_value : 0;
+}

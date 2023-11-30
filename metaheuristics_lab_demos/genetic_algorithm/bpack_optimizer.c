@@ -148,12 +148,6 @@ ga_bin_r_basic_population_t* population_generator() {
 void _initialization_guard() {
     static unsigned char guard_val = 0x0;
     if (guard_val == 0x0) {
-        /* ga_bin_set_octet_num(4);
-        ga_bin_r_init(200);
-        _chromo_octet_num(4);
-        _population_maxsize(200);
-        population_buffer_setup(200); //HERE<<<<
-        genes_loc( 200 * 4 ); */
         bpack_optimizer_init(200, 4);
         guard_val = 0x1;
     }
