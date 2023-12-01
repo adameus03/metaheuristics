@@ -44,4 +44,4 @@ typedef struct {
  * @param config Configuration structure instance for the algorithm
  * @returns The ordering of nodes in an optimal route
 */
-aco_node_ordering_t aco_optimize_route(node_array nodes, aco_config_t config);
+aco_node_ordering_t aco_optimize_route(aco_node_array_t nodes, aco_config_t config); 
