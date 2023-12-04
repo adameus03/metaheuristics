@@ -6,4 +6,5 @@ add_subdirectory(aco)
 add_subdirectory(data)
 
 #add_subdirectory(metaheuristics_lab_demos/simulated_annealing)
-add_subdirectory(metaheuristics_lab_demos/genetic_algorithm)
+#add_subdirectory(metaheuristics_lab_demos/genetic_algorithm)
+add_subdirectory(metaheuristics_lab_demos/ant_colony_optimization)

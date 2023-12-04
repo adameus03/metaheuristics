@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.0)
-project(genetic_algorithm_metaheuristics_lab_demos VERSION 0.1.0 LANGUAGES C)
+project(ant_colony_optimization_metaheuristics_lab_demos VERSION 0.1.0 LANGUAGES C)
 
 #include(CTest)
 #enable_testing()
@@ -8,13 +8,22 @@ project(genetic_algorithm_metaheuristics_lab_demos VERSION 0.1.0 LANGUAGES C)
 # target_include_directories(${PROJECT_NAME} PUBLIC testDir)
 # add_subdirectory(testDir)
 
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(GTK REQUIRED gtk4)
 
-add_executable(genetic_algorithm_metaheuristics_lab_demos main.c bpack_optimizer.c bbatch.c bvarlogger.c)
+include_directories(${GTK_INCLUDE_DIRS})
+link_directories(${GTK_LIBRARY_DIRS})
+
+add_executable(ant_colony_optimization_metaheuristics_lab_demos main.c)
 
 target_link_libraries(${PROJECT_NAME}
-    sub::ga
+    sub::aco
     sub::data
 )
+target_link_libraries(${PROJECT_NAME} ${GTK_LIBRARIES})
+
+
+
 
 #target_include_directories( ${PROJECT_NAME}
 #    PUBLIC ${PROJECT_SOURCE_DIR}/..
