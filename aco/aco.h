@@ -17,7 +17,8 @@ typedef unsigned int aco_iteration_t;
 /* Type used to express the evaporation factor for ACO pheromones */
 typedef double aco_evaporation_t;
 /* Type used to denote a "(node, node) --> measure" function (typically for measuring distance between nodes)*/
-typedef aco_measure_t (*acoPairScalarFunc)(const aco_node_t, const aco_node_t);
+typedef aco_measure_t (*acoPairScalarFunc)(const aco_node_t, 
+                                           const aco_node_t);
 /*
     Array structure for storing a pointer to a nodes buffer
 */
@@ -25,6 +26,9 @@ typedef struct {
     aco_node_t* buffer;
     aco_node_numeric_t size;
 } aco_node_array_t;
+
+typedef aco_node_array_t* aco_node_array_ptr_t;
+
 /*
     Array structure for storing a pointer to the nodes ordering which should be an array of node indices 
 */
@@ -64,4 +68,5 @@ typedef aco_config_t* aco_config_ptr_t;
  * @param config Configuration structure instance for the algorithm
  * @returns The ordering of nodes in an optimal route
 */
-aco_node_ordering_t aco_optimize_route(aco_node_array_t nodes, aco_config_ptr_t config);
+aco_node_ordering_t aco_optimize_route(const aco_node_array_ptr_t nodes, 
+                                       const aco_config_ptr_t config);

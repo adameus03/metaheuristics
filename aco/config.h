@@ -1,0 +1,2 @@
+#define ACO_MAX_NODES 80
+#define ACO_MAX_ROUTE_LENGTH 80
