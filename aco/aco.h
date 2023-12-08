@@ -1,3 +1,4 @@
+#include "config.h"
 /* Abstract node type */
 typedef void* aco_node_t;
 /* Type used to index the nodes */
@@ -31,11 +32,22 @@ typedef aco_node_array_t* aco_node_array_ptr_t;
 
 /*
     Array structure for storing a pointer to the nodes ordering which should be an array of node indices 
-*/
+
 typedef struct {
-    aco_node_numeric_t* buffer;
+    //aco_node_numeric_t* buffer;
+    aco_node_numeric_t buffer[ACO_MAX_ROUTE_LENGTH];
     aco_route_node_numeric_t size;
-} aco_node_ordering_t;
+} aco_node_ordering_t;*/
+
+/* Representation of a route passing through nodes */
+typedef struct {
+    /* Indices of the nodes present in the route so far */
+    aco_node_numeric_t node_indices[ACO_MAX_ROUTE_LENGTH];
+    /* Number of nodes present in the route so far */
+    aco_route_node_numeric_t num_nodes;
+} aco_route_t;
+
+typedef aco_route_t* aco_route_ptr_t;
 /*
     Configuration structure for the Ant Colony Optimization (ACO) algorithm.
     Contains the route optimization control parameters and the metric for calculating distance between the nodes.
@@ -68,5 +80,5 @@ typedef aco_config_t* aco_config_ptr_t;
  * @param config Configuration structure instance for the algorithm
  * @returns The ordering of nodes in an optimal route
 */
-aco_node_ordering_t aco_optimize_route(const aco_node_array_ptr_t nodes, 
+aco_route_t/*aco_node_ordering_t*/ aco_optimize_route(const aco_node_array_ptr_t nodes, 
                                        const aco_config_ptr_t config);

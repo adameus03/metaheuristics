@@ -1,5 +1,4 @@
 #include "aco.h"
-#include "config.h"
 #include "linked_list.h"
 #include <stdlib.h>
 #include <time.h>
@@ -12,15 +11,8 @@ typedef double aco_pheromone_t;
 
 #define ACO_MAX_EDGES ACO_MAX_NODES * ACO_MAX_NODES
 
-/* Representation of a route passing through nodes */
-typedef struct {
-    /* Indices of the nodes present in the route so far */
-    aco_node_numeric_t node_indices[ACO_MAX_ROUTE_LENGTH];
-    /* Number of nodes present in the route so far */
-    aco_route_node_numeric_t num_nodes;
-} aco_route_t;
 
-typedef aco_route_t* aco_route_ptr_t;
+
 
 /* Container for parameter set assigned to each edge / node connector */
 typedef struct {
@@ -222,10 +214,11 @@ linked_list_node_ptr_t/*aco_node_numeric_t*/ aco_ant_decide(const aco_node_numer
  * @param config Configuration structure instance for the algorithm
  * @returns The ordering of nodes in an optimal route
 */
-aco_node_ordering_t aco_optimize_route(const aco_node_array_ptr_t nodes, 
+aco_route_t/*aco_node_ordering_t*/ aco_optimize_route(const aco_node_array_ptr_t nodes, 
                                        const aco_config_ptr_t config) {
     _aco_random_guard();
-    //aco_route_t route;
+    aco_route_t bestRoute;
+    aco_measure_t bestRouteLength = -1;
     aco_edge_data_t edgeData;
     
     /*for (aco_node_numeric_t i = 0; i < nodes->size; i++) {
@@ -245,6 +238,7 @@ aco_node_ordering_t aco_optimize_route(const aco_node_array_ptr_t nodes,
                 set_pheromone_level_appendix(j1, j2, 0, &edgeData);
             }
         }
+        
         for (aco_ant_numeric_t j = 0; j < config->num_ants; j++) {
 
             //<<<remember to setup route and unvisited>>>
@@ -318,6 +312,11 @@ aco_node_ordering_t aco_optimize_route(const aco_node_array_ptr_t nodes,
                 pheromone_level_appendix += ((aco_pheromone_t)1) / ((aco_pheromone_t)L);
                 set_pheromone_level_appendix(route.node_indices[k], route.node_indices[k+1], pheromone_level_appendix, &edgeData);
             }
+
+            if (L < bestRouteLength || bestRouteLength == -1) {
+                bestRouteLength = L;
+                bestRoute = route; //ok?;
+            }
             
         }
         //update pheromones
@@ -332,4 +331,6 @@ aco_node_ordering_t aco_optimize_route(const aco_node_array_ptr_t nodes,
             }
         }
     }
+
+    return bestRoute;
 }
