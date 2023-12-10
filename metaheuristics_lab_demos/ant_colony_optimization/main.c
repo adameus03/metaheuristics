@@ -39,6 +39,9 @@ activate (GtkApplication *app, gpointer user_data) {
 }
 
 int main (int argc, char *argv[]) {
+  //printf("\nHello!\n");
+  //return 0;
+
 #ifdef GTK_SRCDIR
   g_chdir (GTK_SRCDIR);
 #endif

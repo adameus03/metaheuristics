@@ -26,4 +26,5 @@ void linked_list_from_buffer(const linked_list_element_buffer_t buffer,
 
 linked_list_node_ptr_t linked_list_node_get(linked_list_element_numeric_t index,
                                             const linked_list_node_buffer_t nodes_buffer,
-                                            const linked_list_element_numeric_t buf_len);
+                                            const linked_list_element_numeric_t buf_len,
+                                            const linked_list_element_numeric_t buf_head_ix);

@@ -253,9 +253,10 @@ aco_route_t/*aco_node_ordering_t*/ aco_optimize_route(const aco_node_array_ptr_t
             
 
             aco_node_numeric_t selected_node_index = get_random_aco_node_index(explorationData.list_unvisited_node_buffer_length);
-            linked_list_node_ptr_t selected_list_node = linked_list_node_get(selected_node_index, 
+            linked_list_node_ptr_t selected_list_node = linked_list_node_get(selected_node_index,
                                                             explorationData.list_unvisited_node_buffer, 
-                                                            explorationData.list_unvisited_node_buffer_length);
+                                                            explorationData.list_unvisited_node_buffer_length,
+                                                            0);
             if (selected_list_node->id == unvisited_buf_head_ix) {
                 unvisited_buf_head_ix = selected_list_node->next->id;//
             }
@@ -273,7 +274,8 @@ aco_route_t/*aco_node_ordering_t*/ aco_optimize_route(const aco_node_array_ptr_t
                     selected_node_index = get_random_aco_node_index(explorationData.list_unvisited_node_buffer_length);
                     selected_list_node = linked_list_node_get(selected_node_index, 
                                                             explorationData.list_unvisited_node_buffer, 
-                                                            explorationData.list_unvisited_node_buffer_length);
+                                                            explorationData.list_unvisited_node_buffer_length,
+                                                            unvisited_buf_head_ix);
                 }
                 else {
                     // decide based on pheromones and metrics

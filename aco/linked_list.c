@@ -44,23 +44,24 @@ void linked_list_from_buffer(const linked_list_element_buffer_t buffer,
     return target->element;
 } */
 
-/* Not at all */
 linked_list_node_ptr_t linked_list_node_get(linked_list_element_numeric_t index,
-                                            const linked_list_node_buffer_t nodes_buffer) {
+                                            const linked_list_node_buffer_t nodes_buffer,
+                                            const linked_list_element_numeric_t buf_len,
+                                            const linked_list_element_numeric_t buf_head_ix) {
     linked_list_node_ptr_t target; //no empty verifiaction!
 
-    if (index < buf_len - index) {
-        target = (linked_list_node_ptr_t)nodes_buffer;
+    //if (index < buf_len - index) {
+        target = (linked_list_node_ptr_t)(nodes_buffer + buf_head_ix);
         while (--index) {
             target = target->next;
         }
-    }
-    else {
+    //}
+    /*else {
         target = (linked_list_node_ptr_t)(nodes_buffer + buf_len);
         while (--index) {
             target = target->prev;
         }
-    }
+    }*/
     
     // return target->element;
     return target;

@@ -24,7 +24,8 @@ typedef aco_measure_t (*acoPairScalarFunc)(const aco_node_t,
     Array structure for storing a pointer to a nodes buffer
 */
 typedef struct {
-    aco_node_t* buffer;
+    //aco_node_t* buffer;
+    aco_node_t buffer[ACO_MAX_NODES];
     aco_node_numeric_t size;
 } aco_node_array_t;
 
