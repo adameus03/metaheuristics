@@ -1,11 +1,15 @@
 #include "linked_list.h"
 
 void linked_list_element_remove(linked_list_node_ptr_t linked_node) {
-    linked_node->prev->next = linked_node->next;
-    linked_node->next->prev = linked_node->prev;
+    if (linked_node->prev) {
+        linked_node->prev->next = linked_node->next; //
+    }
+    if (linked_node->next) {
+        linked_node->next->prev = linked_node->prev; //
+    }
 }
 
-void linked_list_from_buffer(const linked_list_element_buffer_t buffer, 
+void linked_list_from_buffer(const linked_list_element_buffer_t buffer,
                              const linked_list_element_numeric_t buf_size,
                              linked_list_node_buffer_t nodes_buffer) {
     for (linked_list_element_numeric_t i = 0; i < buf_size; i++) {
@@ -52,7 +56,7 @@ linked_list_node_ptr_t linked_list_node_get(linked_list_element_numeric_t index,
 
     //if (index < buf_len - index) {
         target = (linked_list_node_ptr_t)(nodes_buffer + buf_head_ix);
-        while (--index) {
+        while (index--) {
             target = target->next;
         }
     //}

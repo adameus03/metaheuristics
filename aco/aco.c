@@ -17,7 +17,7 @@ typedef double aco_pheromone_t;
 /* Container for parameter set assigned to each edge / node connector */
 typedef struct {
     aco_pheromone_t pheromones[ACO_MAX_EDGES];
-    aco_pheromone_t pheromones_appendix[ACO_MAX_EDGES]; //neccessary, or the algorithm could be efficient without it?
+    aco_pheromone_t pheromones_appendix[ACO_MAX_EDGES]; //neccessary, or the algorithm could be efficient without it? I.e. update pheromones after each ant...
     aco_measure_t metric_values[ACO_MAX_EDGES];
 } aco_edge_data_t;
 
@@ -32,43 +32,43 @@ typedef aco_exploration_data_t* aco_exploration_data_ptr_t;
 
 typedef double aco_pherometric_t;
 
-aco_pheromone_t get_pheromone_level(const aco_node_numeric_t index_1, 
+aco_pheromone_t get_pheromone_level(const aco_node_numeric_t index_1,
                                     const aco_node_numeric_t index_2, 
                                     const aco_edge_data_ptr_t reference) {
-    return reference->pheromones[index_1 * ACO_MAX_EDGES + index_2];
+    return reference->pheromones[index_1 * ACO_MAX_NODES + index_2];
 }
 
 void set_pheromone_level(const aco_node_numeric_t index_1, 
                          const aco_node_numeric_t index_2, 
                          const aco_pheromone_t level,
                          const aco_edge_data_ptr_t reference) {
-    reference->pheromones[index_1 * ACO_MAX_EDGES + index_2] = level;
+    reference->pheromones[index_1 * ACO_MAX_NODES + index_2] = level;
 }
 
 aco_pheromone_t get_pheromone_level_appendix(const aco_node_numeric_t index_1, 
                                     const aco_node_numeric_t index_2, 
                                     const aco_edge_data_ptr_t reference) {
-    return reference->pheromones_appendix[index_1 * ACO_MAX_EDGES + index_2];
+    return reference->pheromones_appendix[index_1 * ACO_MAX_NODES + index_2];
 }
 
 void set_pheromone_level_appendix(const aco_node_numeric_t index_1, 
                          const aco_node_numeric_t index_2, 
                          const aco_pheromone_t level,
                          const aco_edge_data_ptr_t reference) {
-    reference->pheromones_appendix[index_1 * ACO_MAX_EDGES + index_2] = level;
+    reference->pheromones_appendix[index_1 * ACO_MAX_NODES + index_2] = level;
 }
 
 aco_measure_t get_metric_value(const aco_node_numeric_t index_1, 
                                const aco_node_numeric_t index_2, 
                                const aco_edge_data_ptr_t reference) {
-    return reference->metric_values[index_1 * ACO_MAX_EDGES + index_2];
+    return reference->metric_values[index_1 * ACO_MAX_NODES + index_2];
 }
 
 void set_metric_value(const aco_node_numeric_t index_1, 
                       const aco_node_numeric_t index_2, 
                       const aco_pheromone_t value,
                       const aco_edge_data_ptr_t reference) {
-    reference->pheromones[index_1 * ACO_MAX_EDGES + index_2] = value;
+    reference->pheromones[index_1 * ACO_MAX_NODES + index_2] = value;
 }
 
 /**
@@ -208,13 +208,33 @@ linked_list_node_ptr_t/*aco_node_numeric_t*/ aco_ant_decide(const aco_node_numer
     return iteration_node/*(aco_node_numeric_t)iteration_node->id*/; //should never reach here in theory
 }
 
+aco_measure_t aco_route_length(const aco_route_ptr_t routePtr, aco_node_array_ptr_t nodes, const acoPairScalarFunc metric) {
+    /*aco_measure_t L = 0;
+    for (aco_route_node_numeric_t k = 0; k < route.num_nodes - 1; k++) { //calc route length
+        L += config->node_metric(nodes->buffer[route.node_indices[k]], nodes->buffer[route.node_indices[k+1]]);
+    }*/
+    aco_measure_t L = 0;
+    for (aco_route_node_numeric_t k = 0; k < routePtr->num_nodes - 1; k++) { //calc route length
+        aco_node_numeric_t node1_index = routePtr->node_indices[k];
+        aco_node_numeric_t node2_index = routePtr->node_indices[k + 1];
+        //aco_measure_t metric_val = metric(nodes->buffer[routePtr->node_indices[k]], nodes->buffer[routePtr->node_indices[k+1]]);
+        aco_measure_t metric_val = metric(nodes->buffer[node1_index], nodes->buffer[node2_index]);
+        if (metric_val == INFINITY) {
+            int a = 1;
+            a += 1;
+        }
+        L += metric_val;
+    }
+    return L;
+}
+
 /**
  * @brief Optimize the route between abstract nodes using Ant Colony Optimization (ACO)
  * @param nodes An array of abstract nodes
  * @param config Configuration structure instance for the algorithm
  * @returns The ordering of nodes in an optimal route
 */
-aco_route_t/*aco_node_ordering_t*/ aco_optimize_route(const aco_node_array_ptr_t nodes, 
+aco_result_t/*aco_route_t*//*aco_node_ordering_t*/ aco_optimize_route(const aco_node_array_ptr_t nodes, 
                                        const aco_config_ptr_t config) {
     _aco_random_guard();
     aco_route_t bestRoute;
@@ -243,6 +263,7 @@ aco_route_t/*aco_node_ordering_t*/ aco_optimize_route(const aco_node_array_ptr_t
 
             //<<<remember to setup route and unvisited>>>
             aco_route_t route;
+            route.num_nodes = 0;
             aco_exploration_data_t explorationData;
             linked_list_from_buffer(nodes->buffer, nodes->size, 
                                 explorationData.list_unvisited_node_buffer);
@@ -292,7 +313,7 @@ aco_route_t/*aco_node_ordering_t*/ aco_optimize_route(const aco_node_array_ptr_t
                     );
                 }
                 
-                if (selected_list_node->id == unvisited_buf_head_ix) {
+                if (selected_list_node->id == unvisited_buf_head_ix && explorationData.list_unvisited_node_buffer_length != 1) {
                     unvisited_buf_head_ix = selected_list_node->next->id;//
                 }
                 linked_list_element_remove(selected_list_node); //... ... do not forget to decrement length of unvisited nodes buffer
@@ -303,10 +324,11 @@ aco_route_t/*aco_node_ordering_t*/ aco_optimize_route(const aco_node_array_ptr_t
 
             //update pheromones appendix
             
-            aco_measure_t L = 0;
+            /*aco_measure_t L = 0;
             for (aco_route_node_numeric_t k = 0; k < route.num_nodes - 1; k++) { //calc route length
                 L += config->node_metric(nodes->buffer[route.node_indices[k]], nodes->buffer[route.node_indices[k+1]]);
-            }
+            }*/
+            aco_measure_t L = aco_route_length(&route, nodes, config->node_metric);
 
             aco_pheromone_t pheromone_level_appendix;
             for (aco_route_node_numeric_t k = 0; k < route.num_nodes - 1; k++) {
@@ -317,7 +339,13 @@ aco_route_t/*aco_node_ordering_t*/ aco_optimize_route(const aco_node_array_ptr_t
 
             if (L < bestRouteLength || bestRouteLength == -1) {
                 bestRouteLength = L;
-                bestRoute = route; //ok?;
+                //bestRoute = route; //ok?;
+                bestRoute.num_nodes = route.num_nodes;
+                for (aco_node_numeric_t i = 0; i < route.num_nodes; i++) {
+                    bestRoute.node_indices[i] = route.node_indices[i];
+                }
+                
+                
             }
             
         }
@@ -334,5 +362,9 @@ aco_route_t/*aco_node_ordering_t*/ aco_optimize_route(const aco_node_array_ptr_t
         }
     }
 
-    return bestRoute;
+    aco_result_t result;
+    result.route = bestRoute;
+    result.route_length = aco_route_length(&bestRoute, nodes, config->node_metric);
+    //return bestRoute;
+    return result;
 }

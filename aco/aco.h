@@ -74,12 +74,21 @@ typedef struct {
     */
     aco_evaporation_t evaporation_factor;
 } aco_config_t;
+
 typedef aco_config_t* aco_config_ptr_t;
+
+aco_measure_t aco_route_length(const aco_route_ptr_t routePtr, aco_node_array_ptr_t nodes, const acoPairScalarFunc metric);
+
+typedef struct {
+    aco_route_t route;
+    aco_measure_t route_length;
+} aco_result_t;
+
 /**
  * @brief Optimize the route between abstract nodes using Ant Colony Optimization (ACO)
  * @param nodes An array of abstract nodes
  * @param config Configuration structure instance for the algorithm
  * @returns The ordering of nodes in an optimal route
 */
-aco_route_t/*aco_node_ordering_t*/ aco_optimize_route(const aco_node_array_ptr_t nodes, 
+aco_result_t /*aco_route_t*//*aco_node_ordering_t*/ aco_optimize_route(const aco_node_array_ptr_t nodes, 
                                        const aco_config_ptr_t config);

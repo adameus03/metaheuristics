@@ -1,5 +1,6 @@
 #include <gtk/gtk.h>
 #include <glib/gstdio.h>
+#include "optimizer_fio.h"
 
 static void print_hello_1 (GtkWidget *widget, gpointer data) {
   g_print ("Hello Europe\n");
@@ -38,7 +39,27 @@ activate (GtkApplication *app, gpointer user_data) {
   g_object_unref (builder);
 }
 
+
+void console_demo(const char* path) {
+  aco_r2_cart_euc_config_t ar2ceConfig;
+  ar2ceConfig.metric_weight = 1;
+  ar2ceConfig.pheromone_weight = 1;
+  ar2ceConfig.num_ants = 30;
+  ar2ceConfig.ant_randomness_factor = 0.3;
+  ar2ceConfig.num_iters = 1000;
+
+  aco_result_t result = find_best_route(path, &ar2ceConfig);
+  aco_route_t shortest_route = result.route;
+  printf("\nFound route: ");
+  print_route(shortest_route);
+  printf("\nLength: ");
+  printf("%4.0f\n", result.route_length);
+}
+
 int main (int argc, char *argv[]) {
+  console_demo("/home/mundus/base/sem5/miz/acdata/P-n16-k8.txt");
+  //console_demo("/home/mundus/base/sem5/miz/acdata/A-n32-k5.txt");
+  //console_demo("/home/mundus/base/sem5/miz/acdata/A-n80-k10.txt");
   //printf("\nHello!\n");
   //return 0;
 

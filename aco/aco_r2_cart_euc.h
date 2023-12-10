@@ -45,5 +45,5 @@ typedef struct {
 
 typedef aco_r2_cart_euc_config_t* aco_r2_cart_euc_config_ptr_t;
 
-aco_route_t/*aco_node_ordering_t*/ aco_r2_cart_euc_optimize_route(const aco_node_array_ptr_t nodes,
+aco_result_t/*aco_route_t*//*aco_node_ordering_t*/ aco_r2_cart_euc_optimize_route(const aco_node_array_ptr_t nodes,
                                                                   const aco_r2_cart_euc_config_ptr_t config);

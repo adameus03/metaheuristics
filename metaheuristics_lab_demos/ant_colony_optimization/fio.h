@@ -6,5 +6,8 @@ typedef struct {
     r2_cart_point_storage_t point_storage;
 } fio_out_nodes_t;
 
-fio_out_nodes_t/*r2_cart_point_ptr_buffer_t*/ fio_get_points(const char* filePath);
+typedef fio_out_nodes_t* fio_out_nodes_ptr_t;
+
+fio_out_nodes_t/*r2_cart_point_ptr_buffer_t*/ fio_get_points(const char* filePath,
+                                                            const fio_out_nodes_ptr_t output);
 
