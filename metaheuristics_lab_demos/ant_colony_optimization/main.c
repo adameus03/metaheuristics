@@ -2,7 +2,8 @@
 #include <glib/gstdio.h>
 
 //#include "optimizer_fio.h"
-#include "abatch.h"
+//#include "abatch.h"
+#include "avarlogger.h"
 
 static void print_hello_1 (GtkWidget *widget, gpointer data) {
   g_print ("File select\n");
@@ -131,10 +132,24 @@ void console_demo(const char* path) {
   ar2ceConfig.pheromone_weight = 1;
   ar2ceConfig.num_ants = 30;
   ar2ceConfig.ant_randomness_factor = 0.3;
-  ar2ceConfig.num_iters = 1000;
+  ar2ceConfig.num_iters = 100;
+  ar2ceConfig.evaporation_factor = 0.5;
 
-  abatch_stat_t stats = abatch("TSP", 100, path, &ar2ceConfig, VERBOSE);
-  print_stat(stats);  
+  /*abatch_stat_t stats = abatch("TSP", 1000, path, &ar2ceConfig, VERBOSE);
+  #print_stat(stats);*/
+
+
+  avarlogger_config_t avarloggerConfig;
+  avarloggerConfig.logger_name = "TSP";
+  avarloggerConfig.path = (char*)path;
+  avarloggerConfig.ar2ceConfig = &ar2ceConfig;
+  init_avarlogger(&avarloggerConfig);
+  varlog_metric_weight(0.1, 3.005, 0.005, "TSP_metric_weight.acolog");
+  varlog_pheromone_weight(0.1, 3.005, 0.005, "TSP_pheromone_weight.acolog");
+  varlog_num_ants(10, 51, 1, "TSP_num_ants.acolog");
+  varlog_ant_randomness_factor(0, 1.005, 0.005, "TSP_ant_randomness_factor.acolog");
+  varlog_num_iters(1, 101, 1, "TSP_num_iters.acolog");
+  varlog_evaporation_factor(0, 1, 0.005, "TSP_evaporation_facotr.acolog");
 
   /*aco_result_t result = find_best_route(path, &ar2ceConfig);
   aco_route_t shortest_route = result.route;

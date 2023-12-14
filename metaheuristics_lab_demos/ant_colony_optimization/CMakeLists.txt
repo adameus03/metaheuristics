@@ -15,7 +15,7 @@ include_directories(${GTK_INCLUDE_DIRS})
 configure_file(gui.ui ${CMAKE_CURRENT_BINARY_DIR}/gui.ui COPYONLY)
 link_directories(${GTK_LIBRARY_DIRS})
 
-add_executable(ant_colony_optimization_metaheuristics_lab_demos main.c fio.c optimizer_fio.c abatch.c)
+add_executable(ant_colony_optimization_metaheuristics_lab_demos main.c fio.c optimizer_fio.c abatch.c avarlogger.c)
 
 target_link_libraries(${PROJECT_NAME}
     sub::aco
