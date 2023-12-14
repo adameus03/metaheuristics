@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <object id="window" class="GtkWindow">
-    <property name="title">Grid</property>
+    <property name="title">ACO Optimizer for Traveling Salesman Problem</property>
     <child>
       <object id="grid" class="GtkGrid">
         <child>
