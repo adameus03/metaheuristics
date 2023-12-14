@@ -149,7 +149,7 @@ void console_demo(const char* path) {
   varlog_num_ants(10, 51, 1, "TSP_num_ants.acolog");
   varlog_ant_randomness_factor(0, 1.005, 0.005, "TSP_ant_randomness_factor.acolog");
   varlog_num_iters(1, 101, 1, "TSP_num_iters.acolog");
-  varlog_evaporation_factor(0, 1, 0.005, "TSP_evaporation_facotr.acolog");
+  varlog_evaporation_factor(0, 1, 0.005, "TSP_evaporation_factor.acolog");
 
   /*aco_result_t result = find_best_route(path, &ar2ceConfig);
   aco_route_t shortest_route = result.route;
@@ -160,8 +160,8 @@ void console_demo(const char* path) {
 }
 
 int main (int argc, char *argv[]) {
-  console_demo("/home/mundus/base/sem5/miz/acdata/P-n16-k8.txt");
-  //console_demo("/home/mundus/base/sem5/miz/acdata/A-n32-k5.txt");
+  //console_demo("/home/mundus/base/sem5/miz/acdata/P-n16-k8.txt");
+  console_demo("/home/mundus/base/sem5/miz/acdata/A-n32-k5.txt");
   //console_demo("/home/mundus/base/sem5/miz/acdata/A-n80-k10.txt");
   //printf("\nHello!\n");
   return 0;

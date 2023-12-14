@@ -166,7 +166,7 @@ linked_list_node_ptr_t/*aco_node_numeric_t*/ aco_ant_decide(const aco_node_numer
 
     aco_node_numeric_t unvisited_counter = 1;
     linked_list_node_ptr_t iteration_node = &(explorationData->list_unvisited_node_buffer[unvisited_buf_head_ix]);
-    while (unvisited_counter < num_unvisited && unvisited_counter < 3) {
+    while (unvisited_counter < num_unvisited /*&& unvisited_counter < 3*/) {
         iteration_node = iteration_node->next;
         pherometric_total += calc_pherometric(
             //get_pheromone_level(current_node_index, (aco_node_numeric_t)explorationData->list_unvisited_node_buffer[0].id, edgeData),
@@ -186,7 +186,7 @@ linked_list_node_ptr_t/*aco_node_numeric_t*/ aco_ant_decide(const aco_node_numer
         metricWeight,
         pheromoneWeight
     );
-    if (r < 50 * ((aco_randomness_t)partial_sum) / (aco_randomness_t)pherometric_total) {
+    if (r < /*50 **/ ((aco_randomness_t)partial_sum) / (aco_randomness_t)pherometric_total) {
         return explorationData->list_unvisited_node_buffer + unvisited_buf_head_ix/*(aco_node_numeric_t)unvisited_buf_head_ix*/;
     }
     
