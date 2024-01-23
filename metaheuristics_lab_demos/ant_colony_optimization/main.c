@@ -135,8 +135,8 @@ void console_demo(const char* path) {
   ar2ceConfig.num_iters = 100;
   ar2ceConfig.evaporation_factor = 0.5;
 
-  /*abatch_stat_t stats = abatch("TSP", 1000, path, &ar2ceConfig, VERBOSE);
-  #print_stat(stats);*/
+  abatch_stat_t stats = abatch("TSP", 1000, path, &ar2ceConfig, QUIET/*VERBOSE*/);
+  print_stat(stats); return;
 
 
   avarlogger_config_t avarloggerConfig;
@@ -161,8 +161,8 @@ void console_demo(const char* path) {
 
 int main (int argc, char *argv[]) {
   //console_demo("/home/mundus/base/sem5/miz/acdata/P-n16-k8.txt");
-  console_demo("/home/mundus/base/sem5/miz/acdata/A-n32-k5.txt");
-  //console_demo("/home/mundus/base/sem5/miz/acdata/A-n80-k10.txt");
+  //console_demo("/home/mundus/base/sem5/miz/acdata/A-n32-k5.txt");
+  console_demo("/home/mundus/base/sem5/miz/acdata/A-n80-k10.txt");
   //printf("\nHello!\n");
   return 0;
 
